@@ -1,4 +1,4 @@
-package com.example.nbayes;
+package it.unimi.evotion.tasks.nbayesPredict;
 
 public interface Task {
 

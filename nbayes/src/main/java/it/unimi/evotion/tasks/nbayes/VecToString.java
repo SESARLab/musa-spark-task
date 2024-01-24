@@ -1,4 +1,4 @@
-package com.example.nbayes;
+package it.unimi.evotion.tasks.nbayes;
 
 import org.apache.spark.ml.linalg.DenseVector;
 

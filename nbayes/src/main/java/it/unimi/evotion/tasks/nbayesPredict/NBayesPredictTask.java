@@ -1,49 +1,50 @@
-package com.example.nbayes;
+package it.unimi.evotion.tasks.nbayesPredict;
 
+import it.unimi.evotion.tasks.nbayesPredict.Task;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.spark.ml.classification.NaiveBayes;
 import org.apache.spark.ml.classification.NaiveBayesModel;
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
-import org.apache.spark.ml.feature.*;
-import org.apache.spark.ml.linalg.DenseVector;
+import org.apache.spark.ml.feature.StringIndexer;
+import org.apache.spark.ml.feature.VectorAssembler;
+import org.apache.spark.ml.feature.VectorDisassembler;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.*;
-
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Metadata;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.spark.sql.functions.*;
-
-public class nBayesTask implements Task {
+public class NBayesPredictTask implements Task {
 
     // ----------------------------------------------------------------------
     // Private fields
     // ----------------------------------------------------------------------
     private Logger logger;
     private SparkSession spark;
+    /*
     private String csvData;
     private String labelName;
     private String label;
     private int labelIndex;
     private String resultPath;
-    private String trainSet;
-    private String testSet;
-    //private String[] allNames;
-    //private String[] featureNames;
+    private String modelData;
+    */
     private List<String> lcn = new ArrayList<>();
-    private double testError;
-
-    private double rmse;
-
 
     private Dataset<Row> df;    // input dataframe
     private Dataset<Row> dfResult;
     private Dataset<Row> predictions;
+    private Map<String,String> parameters;
+    private static final int FIRST_OCCURRENCE = 2;
+    private static final int KEY = 0;
+    private static final int VALUE = 1;
 
     private Vector featureImportances;
     private String debugString;
@@ -53,7 +54,7 @@ public class nBayesTask implements Task {
     // ----------------------------------------------------------------------
 
     /**
-     * Create the RandomForestTree Model
+     * Create the Naive Bayes Prediction
      * <p>
      * Note: if the label is numeric (float|double) the decision tree is used
      * for regressione, otherwise (int) for classification
@@ -69,34 +70,33 @@ public class nBayesTask implements Task {
     @Override
     public void init(Object... args) throws Exception {
 
-        this.logger = LogManager.getLogger(nBayesTask.class);
-
-        if (args.length < 4)
+        this.logger = LogManager.getLogger(NBayesPredictTask.class);
+        parameters = Arrays.stream(args).map(x -> x.toString().split("=", FIRST_OCCURRENCE))
+                .collect(Collectors.toMap(x -> x[KEY], x -> x[VALUE]));
+     /*
+        if (args.length < 5)
             throw new InvalidParameterException("Missing parameters.");
 
         this.csvData = (String) args[0];
-        this.labelName = (String) args[1];
-        this.label = (String) args[2];
-        this.trainSet = (String) args[3];
-        this.testSet = (String) args[4];
+        this.modelData  = (String) args[1];
+        this.labelName = (String) args[2];
+        this.label = (String) args[3];
         this.labelIndex = -1;
-        this.resultPath = (String) args[5];
-
+        this.resultPath = (String) args[4];
+*/
         try {
             this.spark = SparkSession
                     .builder()
-                    .master("local[2]")
-                    .config("spark.driver.bindAddress", "127.0.0.1")
+                    //.master("local[2]")
                     // .master("yarn")
-                    .appName("nBayesTask")
+                    .appName("NBayesPredictTask")
                     .getOrCreate();
         } catch (Exception e) {
             this.spark = SparkSession
                     .builder()
                     .master("local[2]")
-                    .config("spark.driver.bindAddress", "127.0.0.1")
                     // .master("yarn")
-                    .appName("nBayesTask")
+                    .appName("NBayesPredictTask")
                     .getOrCreate();
         }
     }
@@ -107,45 +107,23 @@ public class nBayesTask implements Task {
 
         // load the dataset on the file
         this.df = spark.read()
-                .format("csv")
+                .format("csv") // was parquet
                 .option("header", "true")
                 .option("inferSchema", "true")
-                .load(csvData);
+                .load(parameters.get("test"));
 
-        convertFeatures();
         formatData();
-        Dataset<Row>[] splits = df.randomSplit(new double[]{Double.parseDouble(this.trainSet), Double.parseDouble(this.testSet)}, 1234L);
-        Dataset<Row> train = splits[0];
-        Dataset<Row> test = splits[1];
+        NaiveBayesModel model = NaiveBayesModel.load(parameters.get("modelData"));
 
-// create the trainer and set its parameters
-        NaiveBayes nb = new NaiveBayes();
+        this.predictions = model.transform(this.df);
+        predictions = predictions.drop("Features");
 
-// train the model
-        NaiveBayesModel model = nb.fit(train);
-       // VecToString vecstr = new VecToString();
+        VectorDisassembler vd = new VectorDisassembler().setInputCol("probability");
+        predictions = vd.transform(predictions).drop("probability");
+        VectorDisassembler vd2 = new VectorDisassembler().setInputCol("rawPrediction");
+        predictions = vd2.transform(predictions).drop("rawPrediction");
 
-// Select example rows to display.
-        this.predictions = model.transform(test);
-        //  predictions.show();
-        predictions = predictions
-                .drop("Features")
-                //.withColumn("raw_prediction", col("rawPrediction"))
-                //.withColumn("probability", concat_ws(",", col("probability")).cast(DataTypes.StringType))
-                .drop("rawPrediction")
-                .drop("probability");
-
-
-       // predictions.show();
-
-       // predictions.createOrReplaceTempView("pred");
-       // predictions = spark.sql(String.format("SELECT features, rawPrediction, probability, label, prediction FROM pred"));
-       // predictions = spark.sql(String.format("SELECT label, CAST(features AS ARRAY<STRING>), CAST(rawPrediction AS STRING), CAST(probability AS STRING), prediction FROM pred"));
-
-
-        //predictions = predictions.selectExpr("CAST(features AS ARRAY<STRING>)").selectExpr("CAST(rawPrediction AS ARRAY<STRING>)").selectExpr("CAST(probability AS ARRAY<STRING>)").select("prediction");
-        //   , CAST(rawPrediction AS ARRAY<STRING>), CAST(probability AS ARRAY<STRING>), label, prediction")
-        predictions.show();
+        predictions.show(false);
 // compute accuracy on the test set
         MulticlassClassificationEvaluator evaluator = new MulticlassClassificationEvaluator()
                 .setLabelCol("label")
@@ -159,25 +137,24 @@ public class nBayesTask implements Task {
         StructType sch = new StructType(new StructField[]{
                 new StructField("Test_Set_Accuracy", DataTypes.DoubleType, true, Metadata.empty())});
         dfResult = spark.createDataFrame(row, sch);
-
-        System.out.println("Test set accuracy = " + accuracy);
+        //System.out.println("Test set accuracy = " + accuracy);
 
     }
 
     @Override
     public void postProcessing(Object... params) throws Exception {
 
-        this.dfResult.coalesce(1).write()
-                .format("csv")
+        this.dfResult.write()
+                .format("parquet")
                 .mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .save(resultPath);
+                .save(parameters.get("resultPath"));
 
-        this.predictions.coalesce(1).write()
-                .format("csv")
+        this.predictions.write()
+                .format("parquet")
                 .mode(SaveMode.Append)
                 .option("header", "true")
-                .save(resultPath);
+                .save(parameters.get("resultPath"));
 
         this.logger.info(this.debugString);
         this.spark.stop();
@@ -186,12 +163,11 @@ public class nBayesTask implements Task {
 
     void formatData() {
         StringIndexer indexer = new StringIndexer()
-                .setInputCol(String.valueOf(df.col(this.label)))
+                .setInputCol(String.valueOf(df.col(parameters.get("label"))))
                 .setOutputCol("label");
 
         df = indexer.fit(df).transform(df);
-
-        String processedLabelNames = this.labelName.replaceAll("'", "");
+        String processedLabelNames = parameters.get("labelName").replaceAll("'", "");
         for (String c : df.columns()) {
             df = df.withColumnRenamed(c, c.replaceAll("'", ""));
         }
@@ -208,29 +184,6 @@ public class nBayesTask implements Task {
 
         df = assembler1.transform(df);
         df.show();
-    }
-
-    private void convertFeatures() {
-        List<String> stringFeatures = new ArrayList<>();
-
-        for (StructField field : this.df.schema().fields()) {
-            if (field.dataType().equals(DataTypes.StringType))
-                stringFeatures.add(field.name());
-        }
-
-        for (String sf : stringFeatures) {
-            String rn = "str-" + sf;
-            this.df = this.df.withColumnRenamed(sf, rn);
-            StringIndexer encoder = new StringIndexer()
-                    .setInputCol(rn)
-                    .setOutputCol(sf);
-
-            this.df = encoder.fit(this.df).transform(this.df).drop(rn);
-            this.df = this.df.withColumn(sf, this.df.col(sf).cast(DataTypes.IntegerType));
-        }
-
-        this.df.printSchema();
-        this.df.show();
     }
 
 }

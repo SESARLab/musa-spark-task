@@ -1,4 +1,4 @@
-package com.example.nbayes;
+package it.unimi.evotion.tasks.nbayes;
 public class NBayes {
     public static void main(String[] args) throws Exception {
         nBayesTask task = new nBayesTask();
