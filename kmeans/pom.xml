@@ -60,6 +60,12 @@
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.20.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.spark.ml.feature</groupId>
+            <artifactId>VectorDisassembler</artifactId>
+            <version>2.11</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/vectordisassembler_2.11-0.1.0.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>
