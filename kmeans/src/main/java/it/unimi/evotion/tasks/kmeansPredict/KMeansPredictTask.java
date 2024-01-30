@@ -108,7 +108,7 @@ public class KMeansPredictTask implements Task {
         Dataset<Row> predictions = model.transform(df);
         dfResult = predictions.drop("features");
         dfResult.show();
-        double cost = model.computeCost(df);
+//        double cost = model.computeCost(df);
 
 // Shows the result.
         Vector[] centers = model.clusterCenters();

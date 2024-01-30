@@ -126,7 +126,7 @@ public class kMeansTask implements Task {
         //System.out.println("Silhouette with squared euclidean distance = " + silhouette);
 
 
-        double cost = model.computeCost(df);
+//        double cost = model.computeCost(df);
         //System.out.println("Within Set Sum of Squared Errors = " + cost);
 
 // Shows the result.
