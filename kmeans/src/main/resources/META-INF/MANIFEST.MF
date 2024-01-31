@@ -1,0 +1,92 @@
+Manifest-Version: 1.0
+Main-Class: it.unimi.evotion.tasks.kmeans.Kmeans
+Class-Path: guava-16.0.1.jar jakarta.ws.rs-api-2.1.6.jar netty-handler-p
+ roxy-4.1.96.Final.jar plexus-component-annotations-1.5.5.jar scala-libr
+ ary-2.12.18.jar commons-lang3-3.12.0.jar websocket-server-9.4.48.v20220
+ 622.jar log4j-1.2-api-2.20.0.jar javassist-3.29.2-GA.jar maven-settings
+ -3.1.0.jar plexus-utils-3.0.10.jar plexus-cipher-1.4.jar netty-transpor
+ t-native-epoll-4.1.96.Final-linux-aarch_64.jar univocity-parsers-2.9.1.
+ jar asm-9.6.jar breeze_2.12-2.1.0.jar jakarta.xml.bind-api-2.3.2.jar je
+ tty-http-9.4.48.v20220622.jar shims-0.9.45.jar jersey-client-2.40.jar z
+ std-jni-1.5.5-4.jar algebra_2.12-2.0.1.jar protobuf-java-3.19.6.jar arr
+ ow-memory-netty-12.0.1.jar maven-common-artifact-filters-3.1.1.jar cdi-
+ api-1.0.jar spark-mllib_2.12-3.5.0.jar orc-shims-1.9.1.jar spark-mllib-
+ local_2.12-3.5.0.jar xbean-asm9-shaded-4.23.jar jersey-common-2.40.jar 
+ json4s-ast_2.12-3.7.0-M11.jar arrow-format-12.0.1.jar scala-reflect-2.1
+ 2.18.jar spark-sql_2.12-3.5.0.jar jetty-io-9.4.48.v20220622.jar spire_2
+ .12-0.17.0.jar jersey-hk2-2.40.jar leveldbjni-all-1.8.jar javax.inject-
+ 1.jar log4j-slf4j2-impl-2.20.0.jar asm-3.3.1.jar javax.servlet-api-3.1.
+ 0.jar minlog-1.3.0.jar jersey-server-2.40.jar spark-launcher_2.12-3.5.0
+ .jar parquet-encoding-1.13.1.jar websocket-client-9.4.48.v20220622.jar 
+ zookeeper-3.6.3.jar json4s-core_2.12-3.7.0-M11.jar maven-core-3.1.0.jar
+  joda-time-2.12.5.jar slf4j-api-2.0.11.jar jakarta.validation-api-2.0.2
+ .jar org.eclipse.sisu.inject-0.0.0.M2a.jar metrics-graphite-4.2.19.jar 
+ lz4-java-1.8.0.jar janino-3.1.9.jar aether-spi-0.9.0.M2.jar log4j-slf4j
+ -impl-2.22.1.jar jetty-security-9.4.48.v20220622.jar scala-xml_2.12-2.1
+ .0.jar netty-codec-http2-4.1.96.Final.jar maven-artifact-3.1.0.jar comm
+ ons-compress-1.23.0.jar jakarta.annotation-api-1.3.5.jar spire-macros_2
+ .12-0.17.0.jar threeten-extra-1.7.1.jar maven-aether-provider-3.1.0.jar
+  plexus-sec-dispatcher-1.3.jar arrow-memory-core-12.0.1.jar commons-cod
+ ec-1.16.0.jar netty-transport-native-unix-common-4.1.96.Final.jar datas
+ ketches-memory-2.1.0.jar netty-transport-native-epoll-4.1.96.Final-linu
+ x-x86_64.jar jetty-xml-9.4.48.v20220622.jar commons-collections-3.2.2.j
+ ar jetty-webapp-9.4.48.v20220622.jar jaxb-runtime-2.3.2.jar spark-commo
+ n-utils_2.12-3.5.0.jar compress-lzf-1.1.2.jar chill-java-0.10.0.jar zoo
+ keeper-jute-3.6.3.jar spark-streaming_2.12-3.5.0.jar gson-2.10.1.jar sp
+ ire-util_2.12-0.17.0.jar jetty-servlet-9.4.48.v20220622.jar jakarta.inj
+ ect-2.6.1.jar sisu-guice-3.1.0-no_aop.jar spark-unsafe_2.12-3.5.0.jar s
+ park-kvstore_2.12-3.5.0.jar jakarta.servlet-api-4.0.3.jar jsr250-api-1.
+ 0.jar istack-commons-runtime-3.0.8.jar jetty-client-9.4.48.v20220622.ja
+ r jersey-container-servlet-core-2.40.jar spark-tags_2.12-3.5.0.jar comm
+ ons-collections4-4.4.jar jackson-core-2.14.2.jar spark-network-common_2
+ .12-3.5.0.jar netty-transport-4.1.96.Final.jar netty-transport-classes-
+ epoll-4.1.96.Final.jar avro-1.11.2.jar lapack-3.0.3.jar commons-math3-3
+ .6.1.jar curator-framework-2.13.0.jar orc-core-1.9.1-shaded-protobuf.ja
+ r surefire-logger-api-3.2.5.jar tink-1.9.0.jar objenesis-2.5.1.jar parq
+ uet-hadoop-1.13.1.jar hadoop-client-api-3.3.4.jar scala-collection-comp
+ at_2.12-2.7.0.jar jersey-container-servlet-2.40.jar jetty-util-ajax-9.4
+ .48.v20220622.jar arpack-3.0.3.jar jackson-annotations-2.15.2.jar commo
+ ns-io-2.13.0.jar netty-resolver-4.1.96.Final.jar surefire-shared-utils-
+ 3.2.5.jar hive-storage-api-2.8.1.jar jcl-over-slf4j-2.0.7.jar maven-sur
+ efire-plugin-3.2.5.jar json4s-jackson_2.12-3.7.0-M11.jar netty-codec-so
+ cks-4.1.96.Final.jar arpack_combined_all-0.1.jar py4j-0.10.9.7.jar spir
+ e-platform_2.12-0.17.0.jar commons-logging-1.1.3.jar jul-to-slf4j-2.0.7
+ .jar stream-2.9.6.jar metrics-jmx-4.2.19.jar jackson-databind-2.15.2.ja
+ r parquet-common-1.13.1.jar log4j-core-2.22.1.jar log4j-1.2.17.jar Vect
+ orDisassembler-1.0.jar orc-mapreduce-1.9.1-shaded-protobuf.jar arrow-ve
+ ctor-12.0.1.jar hk2-locator-2.6.1.jar hadoop-client-runtime-3.3.4.jar a
+ vro-mapred-1.11.2.jar chill_2.12-0.10.0.jar websocket-api-9.4.48.v20220
+ 622.jar rocksdbjni-8.3.2.jar commons-crypto-1.1.0.jar spark-catalyst_2.
+ 12-3.5.0.jar surefire-extensions-spi-3.2.5.jar opencsv-2.3.jar websocke
+ t-common-9.4.48.v20220622.jar spark-core_2.12-3.5.0.jar parquet-jackson
+ -1.13.1.jar paranamer-2.8.jar parquet-format-structures-1.13.1.jar sure
+ fire-api-3.2.5.jar netty-transport-native-kqueue-4.1.96.Final-osx-aarch
+ _64.jar plexus-classworlds-2.4.2.jar oro-2.0.8.jar netty-transport-clas
+ ses-kqueue-4.1.96.Final.jar JLargeArrays-1.5.jar qdox-2.0.3.jar pickle-
+ 1.3.jar cats-kernel_2.12-2.1.1.jar annotations-17.0.0.jar flatbuffers-j
+ ava-1.12.0.jar spark-sketch_2.12-3.5.0.jar aether-api-1.0.0.v20140518.j
+ ar netty-buffer-4.1.96.Final.jar metrics-core-4.2.19.jar plexus-interpo
+ lation-1.16.jar spark-sql-api_2.12-3.5.0.jar jetty-util-9.4.48.v2022062
+ 2.jar kryo-shaded-4.0.2.jar maven-repository-metadata-3.1.0.jar aether-
+ util-1.0.0.v20140518.jar jetty-server-9.4.48.v20220622.jar audience-ann
+ otations-0.5.0.jar plexus-java-1.2.0.jar maven-plugin-api-3.1.0.jar ant
+ lr4-runtime-4.9.3.jar metrics-jvm-4.2.19.jar curator-client-2.13.0.jar 
+ netty-handler-4.1.96.Final.jar activation-1.1.1.jar scala-parser-combin
+ ators_2.12-2.3.0.jar snappy-java-1.1.10.3.jar hk2-api-2.6.1.jar osgi-re
+ source-locator-1.0.3.jar metrics-json-4.2.19.jar xz-1.9.jar log4j-api-2
+ .22.1.jar commons-compiler-3.1.9.jar netty-common-4.1.96.Final.jar jack
+ son-module-scala_2.12-2.15.2.jar aopalliance-repackaged-2.6.1.jar curat
+ or-recipes-2.13.0.jar aircompressor-0.25.jar datasketches-java-3.3.0.ja
+ r spark-graphx_2.12-3.5.0.jar json4s-scalap_2.12-3.7.0-M11.jar maven-mo
+ del-builder-3.1.0.jar jsr305-3.0.0.jar aether-impl-0.9.0.M2.jar netty-t
+ ransport-native-kqueue-4.1.96.Final-osx-x86_64.jar surefire-booter-3.2.
+ 5.jar ivy-2.5.1.jar commons-text-1.10.0.jar jackson-datatype-jsr310-2.1
+ 5.1.jar spark-network-shuffle_2.12-3.5.0.jar spark-core-2.9.4.jar netty
+ -codec-http-4.1.96.Final.jar parquet-column-1.13.1.jar hk2-utils-2.6.1.
+ jar maven-surefire-common-3.2.5.jar maven-settings-builder-3.1.0.jar bl
+ as-3.0.3.jar breeze-macros_2.12-2.1.0.jar surefire-extensions-api-3.2.5
+ .jar RoaringBitmap-0.9.45.jar netty-codec-4.1.96.Final.jar websocket-se
+ rvlet-9.4.48.v20220622.jar avro-ipc-1.11.2.jar netty-all-4.1.96.Final.j
+ ar JTransforms-3.1.jar org.eclipse.sisu.plexus-0.0.0.M2a.jar aopallianc
+ e-1.0.jar
+
