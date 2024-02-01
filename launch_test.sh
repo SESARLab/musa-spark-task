@@ -1,11 +1,12 @@
-#! /bin/bash
+#! /bin/zsh
 
-echo "Testing $1..."
 if [ $# -lt 2 ]
   then
-    echo "Usage: ./launchDockerKmeans.sh <task> <dataset> [PARAMS]"
+    echo -e "\e[1;33mUsage: ./launchDockerKmeans.sh <task> <dataset> [PARAMS]\e[0m"
     exit 1
 fi
+
+echo -e "Testing \e[32m$1...\e[0m"
 
 task=$1
 ds=$2
