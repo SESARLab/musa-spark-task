@@ -1,6 +1,10 @@
 FROM amazoncorretto:8
 
-ARG path
+ARG jarpath
 ARG dataset
-ADD $path /jars
+ARG modeldata
+ARG modeldir
+
+ADD $jarpath /jars
 ADD $dataset /
+ADD $modeldata $modeldir

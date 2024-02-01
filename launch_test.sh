@@ -12,6 +12,15 @@ ds=$2
 shift 2
 echo "Arguments: $@"
 
-docker build --build-arg path=${task%_*}/out/artifacts/${task}_jar/ --build-arg dataset=${ds} --no-cache --progress=plain -t ${task}-container-image .
+modelDataArg="/../foo"
+for arg in "$@"
+do
+  if [[ $arg == modelData=* ]]; then
+    modelDataArg=${arg#modelData=}
+    break
+  fi
+done
 
-docker run -it ${task}-container-image /usr/lib/jvm/java-1.8.0-amazon-corretto/bin/java -jar /jars/${task%_*}.jar "$@"
+docker build --build-arg jarpath=${task%_*}/out/artifacts/${task}_jar/ --build-arg dataset=${ds} --build-arg modeldata=${task%_*}${modelDataArg}/ --build-arg modeldir=${modelDataArg} --no-cache --progress=plain -t ${task}-container-image .
+
+docker run -it ${task}-container-image /usr/lib/jvm/java-1.8.0-amazon-corretto/bin/java -jar /jars/${task}.jar "$@"
