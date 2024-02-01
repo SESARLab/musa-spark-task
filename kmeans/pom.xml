@@ -6,7 +6,7 @@
 
     <groupId>it.unimi.evotion.tasks</groupId>
     <artifactId>kmeans</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -72,32 +72,18 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <version>3.2.5</version>
         </dependency>
-        <dependency>
-            <groupId>com.sparkjava</groupId>
-            <artifactId>spark-core</artifactId>
-            <version>2.9.4</version>
-        </dependency>
     </dependencies>
 <build>
     <plugins>
-        <!-- <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.2.5</version>
-            <classpathDependencyExcludes>
-                <classpathDependencyExcludes>ch.qos.logback:logback-core</classpathDependencyExcludes>
-                <classpathDependencyExcludes>ch.qos.logback:logback-classic</classpathDependencyExcludes>
-            </classpathDependencyExcludes>
-        </plugin> -->
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>3.3.0</version>
             <configuration>
-                <finalName>sparkexample</finalName>
                 <archive>
                     <manifest>
                         <addClasspath>true</addClasspath>
-                        <mainClass>sparkexample.Hello</mainClass>
+                        <mainClass>it.unimi.evotion.tasks.kmeans.Kmeans</mainClass>
                         <classpathPrefix>dependency-jars/</classpathPrefix>
                     </manifest>
                 </archive>
@@ -122,7 +108,6 @@
                     </goals>
                     <phase>package</phase>
                     <configuration>
-                        <finalName>sparkexample</finalName>
                         <descriptorRefs>
                             <descriptorRef>jar-with-dependencies</descriptorRef>
                         </descriptorRefs>
