@@ -76,7 +76,7 @@ public class kMeansTask implements Task {
                     "Usage: kMeansTask <input_csv_data> <number_of_clusters> <result_path>");
 
         this.csvData = (String) args[0];
-    //    this.labelName = (String) args[1];
+        //    this.labelName = (String) args[1];
         this.k  = (String) args[1];
         this.labelIndex = -1;
         this.resultPath = (String) args[2];
@@ -84,9 +84,6 @@ public class kMeansTask implements Task {
         try {
             this.spark = SparkSession
                     .builder()
-                    .master("local[2]")
-                    .config("spark.driver.bindAddress", "127.0.0.1")
-                    // .master("yarn")
                     .appName("kMeansTask")
                     .getOrCreate();
         }

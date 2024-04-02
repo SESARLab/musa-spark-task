@@ -75,8 +75,6 @@ public class KMeansPredictTask implements Task {
         try {
             this.spark = SparkSession
                     .builder()
-                    //.master("local[2]")
-                    // .master("yarn")
                     .appName("KMeansPredictTask")
                     .getOrCreate();
         }

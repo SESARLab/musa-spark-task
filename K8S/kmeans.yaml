@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kmeans-deployment
+  labels:
+    app: kmeans
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kmeans
+  template:
+    metadata:
+      labels:
+        app: kmeans
+    spec:
+      containers:
+      - name: kmeans
+        image: gabrielestentella/spark:km
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kmeans-service
+spec:
+  selector:
+    app: kmeans
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

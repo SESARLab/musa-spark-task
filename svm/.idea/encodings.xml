@@ -3,5 +3,13 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/svm/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/svm/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/svm_model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/svm_model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/svm_predict/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/svm_predict/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/svmm/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/svmm/src/main/resources" charset="UTF-8" />
   </component>
 </project>

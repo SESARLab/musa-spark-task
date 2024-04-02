@@ -86,8 +86,6 @@ public class AnovaTask implements Task {
                 .builder()
                  //.master("local[2]")
                 // .master("yarn")
-                .config("spark.master", "local")
-                .config("spark.driver.bindAddress", "127.0.0.1")
                 .appName("Anova")
                 .getOrCreate();
         }

@@ -1,1 +1,0 @@
-{"class":"org.apache.spark.mllib.clustering.DistributedLDAModel","version":"1.0","k":5,"vocabSize":1,"docConcentration":[11.0,11.0,11.0,11.0,11.0],"topicConcentration":1.1,"iterationTimes":[0.412580916,0.372380417,0.345219083,0.287212625,0.199884625,0.198646667,0.156542709,0.170855708,0.158370875,0.160494083],"gammaShape":100.0}

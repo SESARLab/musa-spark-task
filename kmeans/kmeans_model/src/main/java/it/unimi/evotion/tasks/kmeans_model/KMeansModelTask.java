@@ -79,8 +79,6 @@ public class KMeansModelTask implements Task {
         try {
             this.spark = SparkSession
                     .builder()
-                    //.master("local[2]")
-                    // .master("yarn")
                     .appName("KMeansModelTask")
                     .getOrCreate();
         }
