@@ -1,0 +1,55 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{a4paper,top=2cm,bottom=2cm,left=2cm,right=2cm}
+\usepackage[utf8]{inputenc}
+\usepackage{listingsutf8}
+\usepackage{url}
+\usepackage{tabularx}
+
+\renewcommand{\familydefault}{\sfdefault}
+\def\labelitemi{--}
+
+\title{Recupero e implementazione di componenti ML per analisi dati in un contesto distribuito}
+\author{Gabriele Stentella \\ 984491}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{tabularx}{\textwidth}{X X}
+\textbf{Relatore:} & \textbf{Correlatori}: \\
+\large{Prof. Claudio A. Ardagna} & \large{Prof. Marco Anisetti} \\
+& \large{Dott. Antongiacomo Polimeno} \\
+\end{tabularx}
+
+\vspace{5pt}
+\hrule
+\vspace{6pt}
+
+Nell'amministrazione dei moderni servizi accessibili via internet da un grande numero di utenti e di software integrati in sistemi ad alta automazione, va affrontata la gestione di un'elevata produzione di dati, fondamentali al fine di migliorare i servizi offerti, far crescere economicamente le aziende che li forniscono ed effettuare analisi sulla sicurezza.
+Questi dati sono caratterizzati da un grande volume che cresce velocemente nel tempo, spesso non sono strutturati e contengono anche informazioni che non hanno utilità, dunque per estrarre valore da tali dati, in letteratura chiamati \emph{Big Data}, serve utilizzare delle tecniche di analisi non tradizionali, ovvero diverse da quelle che sono solitamente eseguite sui classici RDBMS.
+
+Per svolgere analisi su insiemi di dati ad elevata dimensionalità, è necessario parallelizzare il carico computazionale in modo tale da dividere sia il dataset sia le operazioni da svolgere sui dati su diversi nodi di un \textit{cluster}, siano essi macchine fisicamente distinte o nodi implementati in un ambiente virtualizzato.
+Con l'avvento dei \emph{Big Data} sono quindi nati dei framework pensati per gestire sia la distribuzione di dati su più dispositivi, sia l'orchestrazione delle operazioni che vengono svolte su uno stesso insieme di dati, ma su nodi diversi; la prima architettura logica sviluppata è stata \emph{Apache Hadoop}, un insieme di software \textit{open-source} che consente di distribuire il carico computazionale con il modello \emph{MapReduce} e distribuire i dati attraverso l'\emph{Hadoop distributed file system} (HDFS).
+Per superare il processo sequenziale imposto dall'utilizzo di \emph{MapReduce}, è stato sviluppato successivamente \emph{Apache Spark} che consente di leggere i dati dalla memoria, eseguire operazioni e scrivere i risultati in un singolo step, inoltre ha introdotto la possibilità di riuso dei dati mantenuti in cache, caratteristica che consente una grande ottimizzazione di algoritmi che chiamano ripetutamente una funzione su uno stesso dataset, come quelli di \textit{machine learning} (ML), infatti fra le API offerte da \emph{Spark} si trova una libreria specificatamente dedicata al \textit{machine learning} (MLlib), ampiamente utilizzata in questo lavoro di tesi. Un ulteriore vantaggio del framework \emph{Spark} è quello di non avere un proprio sistema di archiviazione, ma di permettere l'utilizzo sia di sistemi esterni come HDFS o \emph{Amazon S3}, sia di soluzioni personalizzate.
+
+Gli algoritmi di ML possono essere utilizzati sia come strumento predittivo, ovvero per cercare di generalizzare le proprietà osservate in una collezione di dati, sia come strumento per effettuare il \emph{data mining}, quindi per ricercare proprietà non note all'interno dei dati che si hanno a disposizione. In generale, l'utilizzo di intelligenza artificiale nell'analisi dati mira a trovare delle correlazioni fra le variabili presenti nella collezione di dati, con il fine di renderle evidenti ad un'analista oppure di utilizzarle per costruire un modello predittivo.
+
+L'utilizzo sempre più pervasivo del \textit{cloud computing} rende accessibile l'utilizzo di tecniche avanzate per l'analisi dati ad un numero crescente di realtà, e dunque è nata l'esigenza di avere algoritmi di \textit{machine learning} che possano essere utilizzati come dei servizi, applicandoli a diverse collezioni di dati.
+L'obiettivo di questa tesi è quello di recuperare algoritmi di \textit{machine learning} per l'analisi dati sviluppati come \emph{Spark tasks} in linguaggio Java, e implementarne di nuovi seguendo un approccio più moderno, quindi utilizzando il linguaggio \emph{Python} e la libreria \emph{Tensorflow}; gli algoritmi vengono poi eseguiti in un contesto distribuito gestito dall'orchestratore \emph{Kubernetes}.
+
+Il lavoro di recupero degli algoritmi è stato portato avanti parallelamente allo studio e all'implementazione di nuovi algoritmi, e il lavoro di tesi può essere riassunto dalle fasi seguenti.
+
+\begin{itemize}
+    \item \textit{\underline{Analisi degli algoritmi esistenti.}} È stata effettuata un'analisi dei diversi algoritmi già implementati al fine di individuare quelli più interessanti per quanto riguarda l'analisi dei dati, in seguito ogni algoritmo selezionato è stato analizzato in dettaglio per individuarne le dipendenze e le versioni delle diverse tecnologie utilizzate.
+    \item \textit{\underline{Aggiornamento e riorganizzazione degli algoritmi.}} Gli algoritmi selezionati sono stati aggiornati per utilizzare la versione più moderna di \emph{Spark}; una libreria non più mantenuta, ma utilizzata dagli algoritmi è stata altresì aggiornata per renderla compatibile, inoltre la struttura dei progetti dei singoli task è stata ripensata in modo tale da poter costruire i diversi \textit{file archivio} (jar), rispettando le eventuali dipendenze presenti fra alcuni task.
+    \item \textit{\underline{Implementazione di un algoritmo di test in \emph{Tensorflow}.}} È stato sviluppato un modello predittivo di \textit{machine learning} in \emph{Python} utilizzando la libreria \emph{Tensorflow}.
+    \item \textit{\underline{Esecuzione distribuita degli algoritmi.}} I task sono stati modificati in modo tale da consentirne l'esecuzi\-one su un cluster \emph{Kubernetes}, e in seguito sono stati eseguiti su un cluster appositamente creato per il testing, virtualizzato su una singola macchina, successivamente è stato implementato un secondo cluster di testing in cloud utilizzando le tecnologie \emph{Amazon EMR on EKS} e \emph{Amazon S3}.
+    \item \textit{\underline{Test di performance dell'esecuzione distribuita.}} Sono stati analizzati i dati di log dei task \emph{Spark} e quelli dell'allenamento del modello sviluppato con \emph{Tensorflow}, al fine di dimostrare l'effettiva distribuzione del carico computazionale e dunque i vantaggi dell'esecuzione in contesto distribuito.
+\end{itemize}
+
+Gli sviluppi futuri per il lavoro cominciato con questa tesi sono molteplici: in primo luogo è possibile utilizzare un sistema di \textit{scheduling} dei flussi di lavoro come \emph{Apache Oozie} o \emph{Airflow} per creare delle \textit{pipeline} di task in modo tale da creare un'infrastruttura idonea ad analisi dati più complessa, inoltre l'approccio proposto per l'implementazione di nuovi algoritmi utilizzando \emph{Python} e \emph{Tensorflow} è scalabile e quindi resta aperta la possibilità di sviluppare nuovi modelli per l'analisi dati o rendere più efficienti algoritmi già implementati o noti in letteratura.
+
+\end{document}
