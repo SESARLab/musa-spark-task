@@ -1,0 +1,227 @@
+\documentclass[12pt,a4paper,fleqn,titlepage]{report}
+\usepackage[T1]{fontenc}
+\usepackage{kpfonts,baskervald}
+\usepackage[utf8]{inputenc}
+\usepackage{listingsutf8}
+\usepackage[italian]{babel}
+\usepackage[italian]{varioref}
+\usepackage{graphicx}
+\usepackage[acronym]{glossaries}
+\usepackage[style=numeric]{biblatex}
+
+\addbibresource{references.bib}
+
+\def\frontmatter{%
+    \pagenumbering{Roman}
+    \setcounter{page}{1}
+    \renewcommand{\thesection}{\Roman{section}}
+}%
+
+\def\mainmatter{%
+    \pagenumbering{arabic}
+    \setcounter{page}{1}
+    \setcounter{section}{0}
+    \renewcommand{\thesection}{\arabic{section}}
+}%
+
+\def\backmatter{%
+    \setcounter{section}{0}
+    \renewcommand{\thesection}{\Alph{section}}
+}%
+
+\newcommand\blankpage{
+    \clearpage
+    \null
+    \thispagestyle{empty}%
+    %\addtocounter{page}{-1}%
+    \clearpage
+}
+
+\newcommand\bd{\emph{\gls{big data}} }
+
+% termini del glossario
+\newglossaryentry{big data}{name={Big Data}, description={Insiemi di dati ad alta dimensionalità, spesso non strutturati, prodotti in maniera continuativa da un servizio o da dispositivi \glsentryshort{iot}}}
+\newglossaryentry{mapreduce}{name={MapReduce}, description={Modello di programmazione per processare in maniera semplice operazioni, svolte su grandi dataset, eseguite su \gls{cluster} di grandi dimensioni}}
+\newglossaryentry{bigtable}{name={Bigtable}, description={Sistema di archiviazione distribuito per dati strutturati}}
+\newglossaryentry{cluster}{name={cluster}, description={Insieme di risorse computazionali}}
+\newglossaryentry{fs}{name={file system}, description={Struttura dati utilizzata per la gestione dei dati archiviati su un supporto elettronico}}
+\newglossaryentry{s3}{name={Amazon S3}, description={\Gls{fs} distribuito offerto da Amazon}}
+\newglossaryentry{sched}{name={scheduler}, description={Strumento per la gestione di flussi di lavoro, nell'ambito specifico di questo elaborato, si intende per l'ingegnerizzazione di \gls{pipeline}}}
+\newglossaryentry{pipeline}{name={data pipeline}, description={Sequenza di task che effettuano operazioni sui dati, in cui l'output di ogni task è usato come input dal successivo}}
+\newglossaryentry{airflow}{name={Apache Airflow}, description={\Gls{sched} sviluppato da Airbnb e reso \textit{open source}}}
+\newglossaryentry{luigi}{name={Luigi}, description={\Gls{sched} sviluppato da Spotify e reso \textit{open source}}}
+\newglossaryentry{container}{name={Container}, description={Unità di virtualizzazione software che contiene un software unitamente alle sue dipendenze, senza virtualizzare un intero sistema operativo}}
+\newglossaryentry{docker}{name={Docker}, description={Strumento per eseguire e amministrare i \gls{container}}}
+\newglossaryentry{kube}{name={Kubernetes}, description={Orchestratore per gestire un \gls{cluster} composto da \gls{container}}}
+\newglossaryentry{yarn}{name={Hadoop Yarn}, description={Yet Another Resource Negotiator, è la tecnologia di gestione delle risorse e pianificazione dell'esecuzione task nel framework di elaborazione distribuita open source Hadoop}}
+
+% acronimi
+\newacronym{aws}{AWS}{Amazon Web Services}
+\newacronym{cpu}{CPU}{Central Processing Unit}
+\newacronym{dl}{DL}{Deep Learning}
+\newacronym{emr}{EMR}{Elastic MapReduce}
+\newacronym{gpu}{GPU}{Graphic Processing Unit}
+\newacronym{ia}{IA}{Intelligenza Artificiale}
+\newacronym{iot}{IoT}{Internet of Things}
+\newacronym{mllib}{MLlib}{Machine Learning library}
+\newacronym{ml}{ML}{Machine Learning}
+\newacronym{ram}{RAM}{Random Access Memory}
+\newacronym{sql}{SQL}{Structured Query Language}
+\newacronym{api}{API}{Application Programming Interface}
+\newacronym{dos}{DoS}{Denial of Service}
+\newacronym{gmm}{GMM}{Gaussian Mixture Model}
+\newacronym{knnc}{KNNC}{K-Nearest Neighbos Classifier}
+\newacronym{lda}{LDA}{Linear Discriminant Analysis}
+\newacronym{anova}{ANOVA}{ANalysis Of VAriance}
+\newacronym{slr}{SLR}{Simple Linear Regression}
+\newacronym{glr}{GLR}{Generalized Linear Regression}
+\newacronym{glm}{GLM}{Generalized Linear Model}
+
+\makeglossaries
+
+\begin{document}
+
+\frontmatter
+
+\thispagestyle{empty}
+
+\begin{center}
+    \includegraphics{images/logo.jpg}\\
+
+    \vspace{.5cm}
+    \textit{\textsf{Corso di Laurea in Sicurezza dei Sistemi e delle Reti Informatiche}} \\
+    \vspace{1cm}
+    {\huge Recupero e implementazione di componenti ML per analisi dati in un contesto distribuito} \\
+    \vspace{2cm}
+    \begin{flushleft}
+        \textbf{Relatore} \\
+        Prof. Claudio A. Ardagna \\
+        \vspace{.7cm}
+        \textbf{Correlatori} \\
+        Prof. Marco Anisetti \\
+        Dott. Antongiacomo Polimeno \\
+        \vspace{1.5cm}
+    \end{flushleft}
+    \begin{flushright}
+        \textit{Tesi di laurea di} \\
+        \vspace{.25cm}
+        Gabriele Stentella \\
+        {\small 984491} \\
+    \end{flushright}
+    \vspace{.5cm}
+    Anno Accademico 2023/2024 \\
+\end{center}
+
+\blankpage
+
+\chapter*{Prefazione}
+\pagestyle{plain}
+Fra il 2003 e il 2006, Google divulgò tre componenti fondamentali sviluppati per affrontare la sfida di indicizzare internet: la tecnologia del proprio \gls{fs}, il modello \gls{mapreduce} e il sistema di archiviazione dati distribuito \gls{bigtable}; rivoluzionando l'industria nascente dei \gls{big data} e gettando le basi per lo sviluppo del framework \emph{Hadoop}, uno strumento \textit{open source} che ha consentito una larga adozione di tecniche per la computazione distribuita. Negli anni successivi, molte di quelle che ora sono le grandi aziende tecnologiche statunitensi hanno adottato e sviluppato l'ecosistema circostante \emph{Hadoop}, implementando diversi \gls{fs} distribuiti e framework per convertire le classiche interrogazioni \emph{\glsentryshort{sql}} in lavori \gls{mapreduce}. Dal momento che avviare e gestire un \gls{cluster} \emph{Hadoop} era un'operazione costosa e impegnativa, la vera adozione di massa dell'infrastruttura è avvenuta quando Amazon lanciò il suo servizio di cloud computing \textit{on-demand} e contestualmente \emph{\gls{emr}}, consentendo di sfruttare i vantaggi del modello \gls{mapreduce} impiegando il \gls{fs} distribuito \emph{\gls{s3}} senza dover acquistare e configurare l'hardware necessario.
+
+Nel 2010 Google rilasciò una nuova ricerca in cui veniva illustrata un'architettura per \textit{query} distribuite e un formato di archiviazione utile a rendere efficienti le operazioni, ancora una volta ispirando altre aziende a sviluppare e poi rendere \textit{open source} tecnologie come \emph{Apache Impala}, \emph{Presto} e \emph{Apache Parquet}.
+
+Alcuni anni dopo vennero rilasciate le prime versioni di \emph{Apache Spark} che ottennero da subito un grande successo, infatti era molto semplice migrare da sistemi per interrogazioni \emph{\glsentryshort{sql}} di \emph{Hadoop} a \emph{SparkSQL}, e il nuovo framework aveva una sintassi più semplice e migliori performance di \gls{mapreduce}, grazie alla sua capacità di utilizzare la \glsentryshort{ram} come cache. La gestione delle risorse del cluster era gestita attraverso il \textit{resource manager} \emph{\gls{yarn}}.
+Poco dopo \emph{Spark} cominciò ad avere successo anche nel mondo del \gls{ml}, grazie al framework \emph{Apache Mahout} prima, e poi alla \emph{\gls{mllib}}, più veloce; inoltre le possibilità offerte da \emph{Spark} si ampliarono grazie alla nascita di \gls{sched} come \emph{\gls{airflow}} e \emph{\gls{luigi}}.
+
+Fra il 2013 e il 2014 si diffusero \emph{\gls{docker}} e l'orchestratore \emph{\gls{kube}} che semplificarono la gestione di cluster anche di grandi dimensioni, rendendo le architetture molto spiù stabili e scalabili; \emph{Spark} si è adattato al contesto, permettendo di utilizzare proprio \emph{\gls{kube}} come \textit{resource manager}.
+
+Con l'avvento del \gls{dl} le attività di computazione si sono spostate sull'utilizzo massiccio di \glsentryshort{gpu} e sull'impiego delle più importanti librerie di \emph{Python} dedicate, \emph{Tensorflow} e \emph{Pytorch}, dunque per questi carichi di lavoro si è passati all'utilizzo delle \gls{api} proprietarie delle librerie per distribuire la computazione anziché usare \emph{Spark}, in modo da usare in maniera efficente la \glsentryshort{gpu} ed evitare di dover creare un cluster per poi installare le librerie su tutti i componenti.
+
+Il percorso che si intende illustrare in questo elaborato ha previsto sia una fase di recupero di algoritmi \gls{ml} eseguiti in un ambiente distribuito attraverso \emph{Spark}, sia l'implementazione di nuovi elementi che sfruttano le \gls{api} delle moderne librerie \gls{dl}, nell'introduzione viene analizzato lo scenario di partenza che rappresenta il contesto in cui si inserisce il lavoro di tesi, in modo tale da illustrare nel dettaglio le motivazioni alla base dell'attività svolta, per poi descrivere il contributo dato dalla soluzione proposta e dettagliare la struttura della trattazione che segue.
+
+\blankpage
+
+\tableofcontents
+\listoffigures
+
+\blankpage
+
+\mainmatter
+
+\chapter*{Introduzione}
+La presenza sempre più diffusa dei \bd ha reso necessario avere infrastrutture e tecnologie di analisi adatte ad estrarre valore da tali dati e che siano scalabili per essere utilizzate da realtà di diverse dimensioni. Al fine di avere procedure efficaci sia nell'attività di analisi che in quella di costruzione di modelli predittivi, occorre affrontare i problemi tipici dei \bd che sono la diffusa eterogeneità, l'accumulo di rumore in fase di raccolta, la frequente presenza di correlazioni spurie. Gli algoritmi impiegati devono essere anche accurati dal punto di vista statistico ed efficaci per quanto riguarda il carico computazionale; per tutte queste ragioni, ma in modo particolare per la necessità di efficenza computazionale, i \bd hanno portato allo sviluppo di nuove infrastrutture di computazione e nuovi metodi di memorizzazione dei dati \cite{fan:2014}.
+
+In tale contesto, le tecnologie di \emph{Apache Hadoop} prima e \emph{Apache Spark} poi, hanno reso semplice ed economica l'analisi e la memorizzazione dei dataset di grandi dimensioni, in particolare, dal momento che l'analisi di \bd richiede una sperimentazione reiterata per trovare i parametri corretti e individuare le giuste metriche di valutazione, \emph{Spark} rappresenta una soluzione tecnologicamente adatta a supportare in modo efficiente questo tipo di lavoro, in particolare se viene utilizzata la libreria \gls{mllib} per il \textit{design} e il \textit{tuning} di algoritmi \gls{ml} \cite{salloum:2016}.
+
+Negli ultimi anni, oltre agli algoritmi \gls{ml} di \textit{shallow learning}, hanno avuto molto successo i modelli \gls{dl} che, a differenza delle architetture \textit{shallow}, traggono vantaggio dall'avere un grande numero di parametri liberi, quindi l'addestramento di tali modelli vede nei \bd una risorsa fondamentale, e contemporaneamente necessita di metodi efficenti per la parallelizzazione delle operazioni di \textit{training} \cite{xue-wenchen:2014}.
+
+I benefici dati da un'analisi dati svolta con l'ausilio di algoritmi \gls{ml} o modelli \gls{dl} sono evidenti nel campo della ricerca medica e scientifica, nella gestione di infrastrutture critiche e nella cosiddetta \emph{business intelligence} \cite{bharadiya:2023}, ma la letteratura è sempre più ricca di applicazioni di queste tecnologie nel campo della sicurezza informatica: grazie alla presenza pervasiva dell'\gls{iot} e in generale dell'evoluzione tecnologica dei dispositivi informatici, compresi gli strumenti di rete, c'è una grandissima produzione di dati che possono essere analizzati in tempo reale per eseguire azioni di prevenzione, ricerca di minacce e \textit{incident response}. Soltanto alcune fra le numerose applicazioni in questo campo sono l'analisi del traffico di rete con l'obiettivo di istituire uno schema di priorità e rendere meno efficaci eventuali attacchi \gls{dos}, identificare comportamenti sospetti, individuare malware e integrare i sistemi di autenticazione \cite{sarker:2023}.
+
+L'obiettivo di questo lavoro di tesi è quello di recuperare degli algoritmi \gls{ml} di analisi dati che sono stati sviluppati in linguaggio Java e utilizzano la tecnologia \emph{Spark}, con il fine di renderli eseguibili in un ambiente distribuito, superando il \textit{resource manager} originario \gls{yarn} e utilizzando \gls{kube}. Parallelamente al recupero degli algoritmi esistenti, la tesi si pone l'obiettivo di studiare la tecnologia di esecuzione distribuita della libreria \emph{Tensorflow} per lo sviluppo di nuovi algoritmi per l'analisi dati eseguibili nel medesimo ambiente distribuito dei precedenti.
+
+L'elaborato è organizzato come segue: nel primo capitolo si espone lo stato dell'arte delle tecnologie per l'analisi dati e il calcolo distribuito, in modo tale da introdurre gli aspetti tecnici alla base del lavoro svolto; nel secondo capitolo si illustrano gli algoritmi coinvolti nella tesi; nel terzo capitolo viene descritto nel dettaglio il lavoro svolto, seguendo la divisione del lavoro nelle fasi di \textit{development}, \textit{deployment} e \textit{testing}; nel quarto e ultimo capitolo si riassume il contributo dato da questa tesi e si esplorano i possibili sviluppi futuri.
+
+\chapter{Le tecnologie per l'analisi dati e il calcolo distribuito}
+    %\section{L'\glsentryshort{ia} per l'analisi dati}
+
+    %\section{Apache Spark}
+
+    %\section{Kubernetes}
+
+
+\chapter{Gli algoritmi di analisi dati}
+Una parte fondamentale del lavoro svolto è stata quella di recuperare degli algoritmi \gls{ml} e statistici sviluppati in linguaggio Java, sfruttando le librerie offerte da Spark, di seguito si descrivono in dettaglio le tecniche di inferenza e gli algoritmi implementati dai task.
+    \paragraph{K-means clustering}
+    K-means è un algoritmo di clustering con approccio partizionale, ottiene in input il parametro $k$, numero di cluster, poi la computazione inizia selezionando $k$ centroidi casuali dal dataset su cui è eseguito, viene calcolata la distanza fra ogni punto del dataset e i centroidi, in modo da assegnare ogni dato al cluster relativo al centroide più vicino. Ogni volta che un nuovo punto viene assegnato al cluster, il centro viene ricalcolato, quindi l'algoritmo viene eseguito iterativamente finché i cluster non sono stabili (nessun punto viene più assegnato a un nuovo cluster) \cite{ikotun:2023}.
+    Osservando il clustering come un \emph{learning problem} — ovvero trattandolo come un compito di apprendimento automatico in cui l'obiettivo è assegnare automaticamente gli oggetti in gruppi omogenei — si utilizza l'algoritmo K-means per allenare un modello \gls{ml} che possa essere sfruttato per poi svolgere delle predizioni: fornito un nuovo punto che rappresenta un dato non presente nel dataset con cui si è svolto il \emph{training}, il modello deve essere in grado di collocarlo in uno dei cluster che ha individuato. Fra i task implementati, uno è dedicato alla creazione del modello e uno all'utilizzo di tale modello per svolgere le predizioni; è inoltre presente un task dedicato alla valutazione del modello, sfruttando il \emph{Silhouette score} \cite{shahapure:2020}.
+    Nella versione classica dell'algoritmo la metrica utilizzata è la distanza euclidea, ma sono state proposte diverse alternative al fine di migliorare le performance \cite{chen:2021, chen:2021a, shen:2017}.
+    La variante bisecting K-means \cite{steinbach:2000} sfrutta l'algoritmo di base per implementare una procedura differente: inizialmente il dataset è considerato come un unico cluster e viene utilizzato K-means per dividerlo in due cluster, si ripete il processo un certo numero di volte e poi si tiene la sezione che presenta due cluster con la più alta similarità fra gli elementi, infine vengono iterati i passaggi precedenti fino a raggiungere il numero di cluster desiderato. Come nel caso dell'algoritmo di base, anche bisecting K-means viene utilizzato per creare un modello con cui poi effettuare delle predizioni.
+
+    \paragraph{Decision Tree Classifier}
+    I classificatori ad albero sono modelli predittivi con una struttura assimilabile a un diagramma di flusso, ideali per il data mining supervisionato. Ogni nodo dell'albero è un test su un attributo del dato da classificare, ogni ramo è un possibile esito del test e ogni foglia indica l'etichetta di classificazione. Il nodo radice non ha rami in ingresso ed è infatti il punto di ingresso all'albero stesso. La classificazione viene effettuata eseguendo i test rappresentati dai nodi, di volta in volta scegliendo il test successivo sulla base del risultato del precedente, continuando fino all'ultimo livello (terminale), in cui tutte le tuple di dati in un nodo comprendono campioni di una sola classe.
+    La costruzione del modello avviene seguendo la fase di generazione (\textit{generation}) prima e di potatura (\textit{pruning}) poi; nella prima fase tutte i dati di allenamento partono nel nodo radice, viene definito un criterio di divisione ed è selezionato il miglior attributo per effettuare la divisione, dopodiché i dati vengono partizionati nei nodi figli e la procedura è ripetuta fino a quando aggiungendo nodi foglia non si aumenta più la precisione dei nodi foglia. Nella seconda fase si punta a ridurre le dimensioni del modello in modo da renderlo più efficente, in particolare vengono rimossi i sottoalberi che si sono creati per riflettere le caratteristiche di eventuale rumore nei dati o outliers \cite{priyanka:2020}.
+    Una volta che si ha un modello affidabile ed efficente, lo si può utilizzare per la classificazione di dati.
+
+    \paragraph{Gaussian Mixture Model}
+    Si tratta di un modello statistico utilizzato per rappresentare la distribuzione di probabilità di un insieme di dati come una combinazione di più distribuzioni gaussiane. Un \gls{gmm} assume che i dati siano generati da un insieme di sottopopolazioni, ognuna che segue una distribuzione gaussiana. È definito da un numero specifico di componenti gaussiane, ognuna con la propria media e varianza; l'obiettivo dell'algoritmo è quello di costruire un modello sulla base di un certo insieme di dati, in modo tale da eseguire poi predizioni collocando nuovi dati nella gaussiana corretta (ovvero stimando la variabile latente) \cite{reynolds:2015}.
+    Il modello viene costruito utilizzando la classe offerta da Spark GaussianMixtureModel in un task, poi un secondo utilizza il modello per eseguire le predizioni.
+
+    \paragraph{K-Nearest Neighbors Classifier}
+    L'algoritmo k-nearest neighbors \cite{cover:1967} è stato utilizzato per costruire un classificatore, quindi il task che lo implementa ha l'obiettivo di restituire in output la classe a cui appartiene un oggetto che riceve in input. La classificazione avviene scegliendo la classe più comune fra i $k$ oggetti con features più simili (e quindi "vicini") all'oggetto da classificare, dove $k$ è parametro dell'algoritmo.
+    Dal momento che il funzionamento dell'algoritmo si basa sul confronto della distanza fra l'oggetto da classificare e una serie di oggetti conosciuti, la fase di allenamento del modello consiste nell'estrazione delle caratteristiche dai dati dedicati al training, in modo da rappresentare ogni oggetto come un vettore in uno spazio $n$-dimensionale (dove $n$ è il numero delle caratteristiche). Ogni vettore è in seguito assegnato a una classe sulla base della classificazione indicata nel dataset, si tratta dunque di un metodo di apprendimento supervisionato e non parametrico \cite{siegel:1957}: non vengono fatte assunzioni sulla distribuzione dei dati su cui opera l'algoritmo, rendendolo adatto alla classificazione di dati di cui non si conosce la distribuzione; occorre tenere presente, tuttavia, che il meccanismo con cui avviene la classificazione, comprende intrinsecamente il rischio che la classificazione sia svolta con bassa accuratezza nel caso in cui la distribuzione sia fortemente asimmetrica, perché gli esempi di una classe più frequente tendono a dominare la previsione di un nuovo esempio (tendono ad essere comuni tra i $k$ vicini più prossimi a causa del loro grande numero), per questo sono stati proposte delle alternative alla regola di base del voto a maggioranza dei $k$ vicini \cite{coomans:1982}.
+    Utilizzando le classi di Spark dedicate al modello \glsentryshort{knnc} — KNNClassificationModel e KNNClassifier — viene costruito il classificatore sulla base di un dataset in input, per poi utilizzare il modello per effettuare le predizioni.
+
+    \paragraph{Linear Discriminant Analysis}
+    Si tratta un algoritmo di riduzione della dimensionalità e di classificazione utilizzato nell'ambito dell'apprendimento supervisionato. L'obiettivo è trovare la combinazione lineare delle caratteristiche che massimizza la separazione tra le classi dei dati utilizzati nell'allenamento del modello, per farlo l'algoritmo \glsentryshort{lda} proietta i dati in uno spazio delle caratteristiche a dimensioni inferiori, senza perdere informazioni, in modo che le diverse classi siano il più separabili possibile lungo questa nuova dimensione. Vengono calcolate le medie delle caratteristiche per ciascuna classe, oltre alle matrici di dispersione intra-classe (\emph{data spread} all'interno di una classe) e inter-classe (\emph{data spread} fra le classi). Successivamente si calcolano le direzioni discriminanti, ovvero i vettori che massimizzano il rapporto tra la varianza inter-classe e la varianza intra-classe, i dati vengono proiettati su queste direzioni per ridurre la dimensionalità e separare le classi nel nuovo spazio delle caratteristiche.
+    Dopo la proiezione dei dati, è possibile utilizzare un classificatore per classificare i nuovi dati in base alla loro posizione nello spazio delle caratteristiche ridotto.
+    \glsentryshort{lda} è spesso utilizzato come tecnica di riduzione della dimensionalità prima di applicare un classificatore, poiché aiuta a migliorare le prestazioni del modello riducendo il rischio di overfitting. È da notare che vengono fatte le assunzioni che i dati siano distribuiti normalmente e che le classi abbiano matrici simili \cite{tharwat:2017}.
+    Nel task implementato, vengono utilizzate le classi di clustering offerte da Spark LDA e LDAModel per allenare il modello ed effettuare le predizioni.
+
+    \paragraph{Principal Component Analysis}
+    In modo simile a \glsentryshort{lda}, questo algoritmo mira a ridurre la dimensionalità dei dati ed è quindi utilizzato nel \emph{preprocessing}; l'idea di base è quella di estrarre le informazioni importanti dal dataset, per poi rappresentarle come variabili ortogonali (le componenti principali) ottenute come combinazioni lineari delle variabili originali, in modo tale da poter poi distinguere graficamente i diversi cluster.
+    Per estrarre la prima componente si ricerca quella che ha varianza maggiore, perché in questo modo si estrae la maggior quantità di informazione dal dataset, per la seconda si pone il vincolo di ortogonalità con la prima e si cerca nuovamente quella con varianza maggiore (tolta la prima), reiterando il processo un numero pari alle componenti che si desidera estrarre \cite{abdi:2010}.
+    Più nel dettaglio, il processo consiste in una prima normalizzazione dei dati (sottraendo la media e dividendo per la deviazione standard), per poi calcolare la matrice di covarianza — $\Sigma$ — dei dati, in seguito si calcolano autovalori e autovettori di $\Sigma$, vengono selezionate le componenti principali estraendo gli autovettori con i corrispondenti autovalori più grandi, infine si proiettano i dati normalizzati sulle componenti principali estratte per ridurre la dimensionalità.
+    Grazie alle classi di Spark PCA e PCAModel, il task esegue il \emph{fitting} del modello e poi restituisce un dataset con le informazioni relative alle componenti principali.
+
+    \paragraph{\gls{anova}}
+    \gls{anova} è una tecnica di inferenza statistica utilizzata per analizzare la differenza fra le medie di più gruppi differenti di dati, con il fine di descrivere le relazioni presenti fra le variabili presenti nel dataset. È particolarmente utile per analizzare i dati ottenuti da diverse misurazioni svolte in seguito a diversi generici "trattamenti" eseguiti nel corso di un esperimento, perché consente di valutare la significanza statistica dei "trattamenti" confrontando i dati con quelli di un ipotetico gruppo di controllo. Per utilizzare \gls{anova} si assume che ogni gruppo su cui si sono effettuate le misurazioni segua una distribuzione normale, le varianze delle popolazioni di provenienza dei gruppi siano uguali fra loro, le osservazioni sui vari gruppi siano indipendenti; l'ipotesi nulla è che tutte le medie delle diverse popolazioni considerate siano uguali, quindi che non ci sia una differenza significativa fra i diversi gruppi, mentre l'ipotesi alternativa è che almeno una media sia differente, con un certo livello di significanza.
+    La versione più semplice dell'analisi è \emph{one-way \gls{anova}}, in cui viene esaminata l'influenza di una singola variabile indipendente, ed è quella eseguita dal task nel caso in cui il dataset in input sia composto da sole due colonne (una per la variabile dipendente e una per quella indipendente); la versione \emph{two-way \gls{anova}}, che analizza l'influenza di due differenti variabili indipendenti, è eseguita se il dataset ha tre colonne, la versione \emph{multi-way \gls{anova}} serve per l'analisi della varianza provocata da più di due variabili indipendenti simultaneamente ed è eseguita se il dataset ha almeno quattro colonne.
+    L'algoritmo restituisce una tabella contenente i gradi di libertà, la somma dei quadrati, la media dei quadrati, l'\emph{f-ratio}, il \emph{p-value}, il numero di celle del dataset, la somma e la media dei loro valori. L'\emph{f-ratio} è il rapporto fra la varianza tra i diversi gruppi, e la varianza all'interno dei singoli gruppi, mentre il \emph{p-value} è la probabilità che l'\emph{f-ratio} sia maggiore o uguale del valore atteso, calcolato prendendo direttamente il valore della \emph{F-distribution} per il valore di significanza $\alpha$, considerando i gradi di libertà di numeratore e denominatore dell'\emph{f-ratio}; se \emph{p-value} è minore di $\alpha$ l'ipotesi nulla è falsa, quindi c'è una differenza significativa dal punto di vista statistico fra le medie dei gruppi \cite{scheffe:1999}.
+
+    \paragraph{Linear Regression}
+    La regressione lineare è una tecnica statistica utilizzata per modellare la relazione tra una variabile dipendente e una o più variabili indipendenti. La forma più comune di regressione lineare è la regressione lineare semplice (\gls{slr}), che coinvolge una sola variabile indipendente, ma esistono diverse varianti della regressione lineare che possono essere utilizzate in diverse situazioni. Il task implementato offre la possibilità di scegliere, con un opportuno parametro, se utilizzare la \gls{slr} o la \gls{glr} che utilizza un \gls{glm}, ovvero una generalizzazione della classica regressione lineare in cui ogni variabile dipendente si assume che sia generata da una distribuzione in forma esponenziale.
+
+    % \paragraph{Logistic Regression}
+
+    % \paragraph{Naive Bayes}
+
+    % \paragraph{Random Forest Tree}
+
+    % \paragraph{Linear Support Vector Classifier}
+
+\chapter{Recupero e implementazione degli algoritmi}
+
+
+\chapter{Conclusioni}
+
+
+
+\blankpage
+
+\backmatter
+
+\printglossaries
+
+\printbibliography[heading=bibintoc]
+
+\end{document}
