@@ -8,6 +8,11 @@
 \usepackage{graphicx}
 \usepackage[acronym]{glossaries}
 \usepackage[style=numeric]{biblatex}
+\usepackage{listings}
+
+\lstset{
+    breaklines=true
+}
 
 \addbibresource{references.bib}
 
@@ -76,6 +81,8 @@
 \newacronym{slr}{SLR}{Simple Linear Regression}
 \newacronym{glr}{GLR}{Generalized Linear Regression}
 \newacronym{glm}{GLM}{Generalized Linear Model}
+\newacronym{pom}{POM}{Project Object Model}
+\newacronym{xml}{XML}{eXtensible Markup Language}
 
 \makeglossaries
 
@@ -145,9 +152,9 @@ In tale contesto, le tecnologie di \emph{Apache Hadoop} prima e \emph{Apache Spa
 
 Negli ultimi anni, oltre agli algoritmi \gls{ml} di \textit{shallow learning}, hanno avuto molto successo i modelli \gls{dl} che, a differenza delle architetture \textit{shallow}, traggono vantaggio dall'avere un grande numero di parametri liberi, quindi l'addestramento di tali modelli vede nei \bd una risorsa fondamentale, e contemporaneamente necessita di metodi efficenti per la parallelizzazione delle operazioni di \textit{training} \cite{xue-wenchen:2014}.
 
-I benefici dati da un'analisi dati svolta con l'ausilio di algoritmi \gls{ml} o modelli \gls{dl} sono evidenti nel campo della ricerca medica e scientifica, nella gestione di infrastrutture critiche e nella cosiddetta \emph{business intelligence} \cite{bharadiya:2023}, ma la letteratura è sempre più ricca di applicazioni di queste tecnologie nel campo della sicurezza informatica: grazie alla presenza pervasiva dell'\gls{iot} e in generale dell'evoluzione tecnologica dei dispositivi informatici, compresi gli strumenti di rete, c'è una grandissima produzione di dati che possono essere analizzati in tempo reale per eseguire azioni di prevenzione, ricerca di minacce e \textit{incident response}. Soltanto alcune fra le numerose applicazioni in questo campo sono l'analisi del traffico di rete con l'obiettivo di istituire uno schema di priorità e rendere meno efficaci eventuali attacchi \gls{dos}, identificare comportamenti sospetti, individuare malware e integrare i sistemi di autenticazione \cite{sarker:2023}.
+I benefici dati da un'analisi dati svolta con l'ausilio di algoritmi \gls{ml} o modelli \gls{dl} sono evidenti nel campo della ricerca medica e scientifica, nella gestione di infrastrutture critiche e nella cosiddetta \emph{business intelligence} \cite{bharadiya:2023}, ma la letteratura è sempre più ricca di applicazioni di queste tecnologie nel campo della sicurezza informatica: grazie alla presenza pervasiva dell'\gls{iot} e in generale dell'evoluzione tecnologica dei dispositivi informatici, compresi gli strumenti di rete, c'è una grandissima produzione di dati che possono essere analizzati in tempo reale per eseguire azioni di prevenzione, ricerca di minacce e \textit{incident response}. Soltanto alcune fra le numerose applicazioni in questo campo sono l'analisi del traffico di rete con l'obiettivo di istituire uno schema di priorità e rendere meno efficaci eventuali attacchi \gls{dos}, identificare comportamenti sospetti, individuare malware e integrare i sistemi di autenticazione \cite{sarker:2023}. In particolare, l'uso dei classificatori è utile per implementare dei filtri sia sul traffico web sia sulla corrispondenza di posta elettronica, in modo tale da ridurre la probabilità che il personale di un'azienda entri in contatto con contenuti malevoli, e di conseguenza minimizzare l'impatto di email spam o siti web malevoli sulla rete aziendale o di un'infrastruttura critica; i classificatori in questione devono essere allenati con un insieme di dati molto grande e in continuo aggiornamento, in modo tale che stiano al passo con l'evoluzione delle minacce, inoltre è necessario che, in base al tipo di classificazione, venga utilizzato un modello statistico adeguato.
 
-L'obiettivo di questo lavoro di tesi è quello di recuperare degli algoritmi \gls{ml} di analisi dati che sono stati sviluppati in linguaggio Java e utilizzano la tecnologia \emph{Spark}, con il fine di renderli eseguibili in un ambiente distribuito, superando il \textit{resource manager} originario \gls{yarn} e utilizzando \gls{kube}. Parallelamente al recupero degli algoritmi esistenti, la tesi si pone l'obiettivo di studiare la tecnologia di esecuzione distribuita della libreria \emph{Tensorflow} per lo sviluppo di nuovi algoritmi per l'analisi dati eseguibili nel medesimo ambiente distribuito dei precedenti.
+L'obiettivo del lavoro svolto durante il tirocinio interno, è quello di recuperare degli algoritmi \gls{ml} di analisi dati che sono stati sviluppati in linguaggio Java e utilizzano la tecnologia \emph{Spark}, con il fine di renderli eseguibili in un ambiente distribuito, superando il \textit{resource manager} originario \gls{yarn} e utilizzando \gls{kube}. Parallelamente al recupero degli algoritmi esistenti, la tesi si pone l'obiettivo di studiare la tecnologia di esecuzione distribuita della libreria \emph{Tensorflow} per lo sviluppo di nuovi algoritmi per l'analisi dati eseguibili nel medesimo ambiente distribuito dei precedenti.
 
 L'elaborato è organizzato come segue: nel primo capitolo si espone lo stato dell'arte delle tecnologie per l'analisi dati e il calcolo distribuito, in modo tale da introdurre gli aspetti tecnici alla base del lavoro svolto; nel secondo capitolo si illustrano gli algoritmi coinvolti nella tesi; nel terzo capitolo viene descritto nel dettaglio il lavoro svolto, seguendo la divisione del lavoro nelle fasi di \textit{development}, \textit{deployment} e \textit{testing}; nel quarto e ultimo capitolo si riassume il contributo dato da questa tesi e si esplorano i possibili sviluppi futuri.
 
@@ -190,7 +197,7 @@ Una parte fondamentale del lavoro svolto è stata quella di recuperare degli alg
     \paragraph{Principal Component Analysis}
     In modo simile a \glsentryshort{lda}, questo algoritmo mira a ridurre la dimensionalità dei dati ed è quindi utilizzato nel \emph{preprocessing}; l'idea di base è quella di estrarre le informazioni importanti dal dataset, per poi rappresentarle come variabili ortogonali (le componenti principali) ottenute come combinazioni lineari delle variabili originali, in modo tale da poter poi distinguere graficamente i diversi cluster.
     Per estrarre la prima componente si ricerca quella che ha varianza maggiore, perché in questo modo si estrae la maggior quantità di informazione dal dataset, per la seconda si pone il vincolo di ortogonalità con la prima e si cerca nuovamente quella con varianza maggiore (tolta la prima), reiterando il processo un numero pari alle componenti che si desidera estrarre \cite{abdi:2010}.
-    Più nel dettaglio, il processo consiste in una prima normalizzazione dei dati (sottraendo la media e dividendo per la deviazione standard), per poi calcolare la matrice di covarianza — $\Sigma$ — dei dati, in seguito si calcolano autovalori e autovettori di $\Sigma$, vengono selezionate le componenti principali estraendo gli autovettori con i corrispondenti autovalori più grandi, infine si proiettano i dati normalizzati sulle componenti principali estratte per ridurre la dimensionalità.
+    Più nel dettaglio, il processo consiste in una prima normalizzazione dei dati (sottraendo la media e dividendo per la deviazione standard), per poi calcolare la matrice di covarianza ($\sigma$) dei dati, in seguito si calcolano autovalori e autovettori di $\sigma$, vengono selezionate le componenti principali estraendo gli autovettori con i corrispondenti autovalori più grandi, infine si proiettano i dati normalizzati sulle componenti principali estratte per ridurre la dimensionalità.
     Grazie alle classi di Spark PCA e PCAModel, il task esegue il \emph{fitting} del modello e poi restituisce un dataset con le informazioni relative alle componenti principali.
 
     \paragraph{\gls{anova}}
@@ -199,9 +206,15 @@ Una parte fondamentale del lavoro svolto è stata quella di recuperare degli alg
     L'algoritmo restituisce una tabella contenente i gradi di libertà, la somma dei quadrati, la media dei quadrati, l'\emph{f-ratio}, il \emph{p-value}, il numero di celle del dataset, la somma e la media dei loro valori. L'\emph{f-ratio} è il rapporto fra la varianza tra i diversi gruppi, e la varianza all'interno dei singoli gruppi, mentre il \emph{p-value} è la probabilità che l'\emph{f-ratio} sia maggiore o uguale del valore atteso, calcolato prendendo direttamente il valore della \emph{F-distribution} per il valore di significanza $\alpha$, considerando i gradi di libertà di numeratore e denominatore dell'\emph{f-ratio}; se \emph{p-value} è minore di $\alpha$ l'ipotesi nulla è falsa, quindi c'è una differenza significativa dal punto di vista statistico fra le medie dei gruppi \cite{scheffe:1999}.
 
     \paragraph{Linear Regression}
-    La regressione lineare è una tecnica statistica utilizzata per modellare la relazione tra una variabile dipendente e una o più variabili indipendenti. La forma più comune di regressione lineare è la regressione lineare semplice (\gls{slr}), che coinvolge una sola variabile indipendente, ma esistono diverse varianti della regressione lineare che possono essere utilizzate in diverse situazioni. Il task implementato offre la possibilità di scegliere, con un opportuno parametro, se utilizzare la \gls{slr} o la \gls{glr} che utilizza un \gls{glm}, ovvero una generalizzazione della classica regressione lineare in cui ogni variabile dipendente si assume che sia generata da una distribuzione in forma esponenziale.
+    La regressione lineare è una tecnica statistica utilizzata per modellare la relazione tra una variabile dipendente e una o più variabili indipendenti, in modo da definire la variabile dipendente come una combinazione lineare di alcuni valori (le variabili indipendenti), detti predittori perché una volta individuata la relazione fra tali valori e la variabile dipendente, è possibile effettuare delle predizioni sulla base dei valori osservati. La forma più comune è la regressione lineare semplice (\gls{slr}), che coinvolge una sola variabile indipendente, ma esistono diverse varianti della regressione lineare che possono essere utilizzate in diverse situazioni.
+    L'obiettivo di \gls{slr} è quello di trovare una funzione lineare che predica il valore della variabile dipendente dato un certo valore di quella indipendente (ovvero data l'ascissa, il valore dell'ordinata deve essere una predizione accurata): le predizioni sono svolte sulla base di un solo predittore \cite{seber:2012}.
 
-    % \paragraph{Logistic Regression}
+    Un \gls{glm} è una generalizzazione che mira a rendere più flessibile la regressione lineare classica, in cui le variabili coinvolte possono seguire una distribuzione arbitraria, e viene utilizzata una \emph{link function} che mette in relazione i predittori con la media della distribuzione della variabile dipendente; anziché far variare linearmente la variabile dipendente stessa, in questo modello è una funzione di tale variabile che varia linearmente con i predittori. La regressione lineare è un \gls{glm} in cui la distribuzione della variabile dipendente è una normale con varianza costante e la \emph{link function} è l'identità \cite{dobson:2018}.
+    Il task implementato offre la possibilità di scegliere, con un opportuno parametro, se utilizzare la \gls{slr} o la \gls{glr} che utilizza un \gls{glm}.
+
+    \paragraph{Logistic Regression}
+    Nel caso in cui si abbia a che fare con delle variabili che possono assumere soltanto due valori (circostanza frequente nei classificatori), è possibile utilizzare un particolare tipo di regressione — la regressione logistica — che utilizza la funzione logit per associare ad un vettore in ingresso un valore di probabilità di appartenenza ad una delle due classi possibili \cite{dobson:2018, hosmer:2013}.
+    Per costruire un modello \gls{ml}, durante la fase di addestramento (supervisionato) si utilizzano i dati dedicati per trovare i coefficienti della funzione logit che massimizzano la corrispondenza fra i dati e la loro classe di appartenenza, poi viene stabilito il \emph{decision boundary} per separare le diverse classi nello spazio delle features. Una volta allenato il modello, si può utilizzare per effettuare classificazione presentando in ingresso nuovi dati: l'output del modello è la probabilità che il vattore in ingresso rappresenti un oggetto appartenente a una delle due classi. I task implementati offrono anche la possibilità di vedere i parametri necessari alla valutazione del modello (precision, recall, f-score) e l'evoluzione della precisione del modello durante la fase di addestramento.
 
     % \paragraph{Naive Bayes}
 
@@ -210,11 +223,154 @@ Una parte fondamentale del lavoro svolto è stata quella di recuperare degli alg
     % \paragraph{Linear Support Vector Classifier}
 
 \chapter{Recupero e implementazione degli algoritmi}
+La prima fase del lavoro è consistita nel recupero di alcuni algoritmi sviluppati con tecnologia Spark sfruttando la libreria \gls{mllib}, originariamente implementati nell'ambito del progetto EVOTION \cite{anisetti:2018}. Affinché i singoli Spark task fossero eseguibili singolarmente, dopo una prima analisi del codice già sviluppato, si è resa necessaria l'estrazione delle singole classi Java che implementano i diversi algoritmi e la contestuale creazione di un progetto autonomo per ogni algoritmo.
+L'autonomia dei singoli progetti è un requisito necessario per avere la possibilità di creare in maniera semplice i cosiddetti \emph{fat jar} (o \emph{uber jar}) — maggiori dettagli in seguito — e dal momento che le classi sono state estratte da un progetto più grande, è stato necessario risolvere le dipendenze perché ogni algoritmo potesse importare tutte le classi e librerie esterne di cui necessitava.
+Un'ulteriore attività svolta è stata quella di aggiornamento della versione di Spark dalla 2.2.0 alla 3.5.0, mantenendo Java 8; dal momento che numerosi algoritmi fra quelli coinvolti nel lavoro utilizzano la classe "VectorDisassembler", realizzata in Scala 2.11 per Spark 2.2.0 da un singolo sviluppatore e non più aggiornata, è stata creata una \emph{fork} della classe in modo da poter aggiornare la versione di Scala e così rendere il codice compatibile con Spark 3.5.0.
 
+\paragraph{Maven}
+I progetti Java sono stati gestiti con Apache Maven, uno strumento per l'amministrazione di progetti software, quindi per risolvere le dipendenze e aggiornare la versione di Spark, l'attività svolta è stata quella di scrivere un nuovo file \gls{pom} per ogni algoritmo; tale file è in formato \gls{xml} e comprende sia i dettagli di configurazione del progetto, sia le informazioni necessarie a Maven per realizzare il pacchetto contenente l'applicazione Java. Il file \gls{pom} contiene delle sezioni che sono dedicate alla struttura del progetto, ovvero in cui sono indicate le relazioni fra le diverse classi; una sezione dedicata alle proprietà del progetto (strettamente dipendenti dal linguaggio e dalle tecnologie utilizzate); una sezione dedicata alla fase di costruzione del pacchetto dell'applicazione Java, dove possono essere configurati vari plugin; un'ultima sezione in cui sono indicate tutte le dipendenze del progetto.
+All'interno di un singolo progetto possono esserci diversi file \gls{pom}, ognuno che gestisce una parte del codice, a diversi livelli di dettaglio: un file più generale può indicare soltanto l'identificativo del gruppo (package) di cui fa parte il progetto, l'identificativo dell'artifatto e i diversi moduli che lo compongono; i file dei singoli moduli poi possono specificare i plugin necessari alla costruzione del file \emph{jar}, così come le dipendenze. Alcuni algoritmi prevedono la presenza di un task Spark dedicato soltanto all'allenamento del modello e un task diverso per effettuare predizioni utilizzando il modello allenato; in questo caso è stato organizzato un unico progetto in cui i due task sono moduli di uno stesso artefatto generale. Un esempio di file \gls{pom} generale è riportato nell'appendice \ref{apx:general_pom}, mentre un esempio di un file di un singolo modulo, contenente sia i plugin sia le dipendenze, è riportato nell'appendice \ref{apx:module_pom}.
+
+\paragraph{\emph{Uber jar}}
+Gli applicativi Java sono solitamente "confezionati" in file archivio, chiamati JAR (da Java Archive), che comprendono sia i file di diverse classi Java, sia i relativi metadati e tutte le risorse che utilizzano; queste generiche risorse possono essere sia file di testo o multimediali, sia altri file JAR.
+I file JAR sono un aspetto fondamentale del linguaggio Java, sia per quanto riguarda la facilità di distribuzione sia per la sicurezza, infatti è possibile inserire in un unico file, detto \emph{uber jar} o \emph{fat jar}, tutti i file delle classi sviluppate per l'applicativo, uniti a tutte le classi che costituiscono le dipendenze, rendendo l'archivio un file completamente autonomo, ovvero eseguibile senza necessità di importare nessuna classe esterna.
+
+\paragraph{Aggiornamento}
+In particolare, l'attività di aggiornamento e riorganizzazione del codice si è svolta in più fasi in cui sono state prima risolte le dipendenze delle classi relative ai singoli algoritmi, svolgendo un test con un dataset di esempio per ciascun task, lanciando l'esecuzione direttamente dall'interno dell'ambiente di sviluppo, in seguito è stata aggiornata la versione di Spark, e sono state svolte minime modifiche al codice Java delle classi per risolvere alcuni problemi di compatibilità relativi all'aggiornamento, solitamente dovuti al fatto che nella nuova versione di Spark alcune classi sono state spostate in librerie differenti rispetto alla versione 2.2.0. Per l'aggiornamento della classe "VectorDisassembler", dopo aver effettuato la \emph{fork} del codice, si è aggiornato il file \gls{pom}, poi si è costruito il nuovo file \emph{jar} che è stato in seguito importato da tutti i task che lo richiedevano. Una volta aggiornati i file di configurazione di tutti i progetti relativi ai singoli algoritmi, sono stati costruiti i file \emph{uber jar}.
 
 \chapter{Conclusioni}
 
 
+\appendix
+\chapter{\glsentryshort{pom} generale}\label{apx:general_pom}
+\begin{lstlisting}
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>it.unimi.evotion.tasks</groupId>
+    <artifactId>kmeans-task</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>kmeans</module>
+        <module>kmeans_model</module>
+        <module>kmeans_predict</module>
+    </modules>
+</project>
+\end{lstlisting}
+
+\chapter{\glsentryshort{pom} di un singolo modulo}\label{apx:module_pom}
+\begin{lstlisting}
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>it.unimi.evotion.tasks</groupId>
+        <artifactId>kmeans-task</artifactId>
+        <version>1.0</version>
+    </parent>
+
+    <artifactId>kmeans</artifactId>
+    <name>KMeans</name>
+    <version>1.0</version>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <spark.version>3.5.0</spark.version>
+        <scala.version>2.12</scala.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>it.unimi.evotion.tasks.kmeans.Kmeans</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-transform-maven-plugin</artifactId>
+                <version>0.1.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process-classes</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.22.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.22.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark.ml.feature</groupId>
+            <artifactId>VectorDisassembler</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+</project>
+\end{lstlisting}
 
 \blankpage
 
