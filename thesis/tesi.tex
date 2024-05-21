@@ -8,10 +8,28 @@
 \usepackage{graphicx}
 \usepackage[acronym]{glossaries}
 \usepackage[style=numeric]{biblatex}
+\usepackage{hyperref}
 \usepackage{listings}
+\usepackage{caption}
 
 \lstset{
+    basicstyle=\footnotesize\fontfamily{fvm}\selectfont,
+    tabsize=2,
+    keywordstyle=\color{black}\bfseries,
+    numbers=left,
+    columns=fullflexible,
     breaklines=true
+}
+
+\DeclareCaptionFormat{captionformat}{\textbf{#1} #2 #3}
+\captionsetup[figure]{format=captionformat}
+\captionsetup[table]{format=captionformat}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=black,
+    citecolor=black
 }
 
 \addbibresource{references.bib}
@@ -83,6 +101,7 @@
 \newacronym{glm}{GLM}{Generalized Linear Model}
 \newacronym{pom}{POM}{Project Object Model}
 \newacronym{xml}{XML}{eXtensible Markup Language}
+\newacronym{musa}{MUSA}{Multilayered Urban Sustainability Action}
 
 \makeglossaries
 
@@ -154,16 +173,18 @@ Negli ultimi anni, oltre agli algoritmi \gls{ml} di \textit{shallow learning}, h
 
 I benefici dati da un'analisi dati svolta con l'ausilio di algoritmi \gls{ml} o modelli \gls{dl} sono evidenti nel campo della ricerca medica e scientifica, nella gestione di infrastrutture critiche e nella cosiddetta \emph{business intelligence} \cite{bharadiya:2023}, ma la letteratura è sempre più ricca di applicazioni di queste tecnologie nel campo della sicurezza informatica: grazie alla presenza pervasiva dell'\gls{iot} e in generale dell'evoluzione tecnologica dei dispositivi informatici, compresi gli strumenti di rete, c'è una grandissima produzione di dati che possono essere analizzati in tempo reale per eseguire azioni di prevenzione, ricerca di minacce e \textit{incident response}. Soltanto alcune fra le numerose applicazioni in questo campo sono l'analisi del traffico di rete con l'obiettivo di istituire uno schema di priorità e rendere meno efficaci eventuali attacchi \gls{dos}, identificare comportamenti sospetti, individuare malware e integrare i sistemi di autenticazione \cite{sarker:2023}. In particolare, l'uso dei classificatori è utile per implementare dei filtri sia sul traffico web sia sulla corrispondenza di posta elettronica, in modo tale da ridurre la probabilità che il personale di un'azienda entri in contatto con contenuti malevoli, e di conseguenza minimizzare l'impatto di email spam o siti web malevoli sulla rete aziendale o di un'infrastruttura critica; i classificatori in questione devono essere allenati con un insieme di dati molto grande e in continuo aggiornamento, in modo tale che stiano al passo con l'evoluzione delle minacce, inoltre è necessario che, in base al tipo di classificazione, venga utilizzato un modello statistico adeguato.
 
-L'obiettivo del lavoro svolto durante il tirocinio interno, è quello di recuperare degli algoritmi \gls{ml} di analisi dati che sono stati sviluppati in linguaggio Java e utilizzano la tecnologia \emph{Spark}, con il fine di renderli eseguibili in un ambiente distribuito, superando il \textit{resource manager} originario \gls{yarn} e utilizzando \gls{kube}. Parallelamente al recupero degli algoritmi esistenti, la tesi si pone l'obiettivo di studiare la tecnologia di esecuzione distribuita della libreria \emph{Tensorflow} per lo sviluppo di nuovi algoritmi per l'analisi dati eseguibili nel medesimo ambiente distribuito dei precedenti.
+L'obiettivo del lavoro svolto durante il tirocinio interno, è quello di recuperare degli algoritmi \gls{ml} di analisi dati che sono stati sviluppati in linguaggio Java e utilizzano la tecnologia \emph{Spark}, con il fine di renderli eseguibili in un ambiente distribuito, superando il \textit{resource manager} originario \gls{yarn} e utilizzando \gls{kube}. Parallelamente al recupero degli algoritmi esistenti, la tesi si pone l'obiettivo di studiare la tecnologia di esecuzione distribuita della libreria \emph{Tensorflow} per lo sviluppo di nuovi algoritmi per l'analisi dati eseguibili nel medesimo ambiente distribuito dei precedenti. L'infrastruttura finale — pensata per lo storage sicuro e l'elaborazione di \bd — in cui si sono eseguiti gli algoritmi, è un ambiente distribuito amministrato con l'orchestratore \gls{kube} ed è stata implementata nell'ambito del progetto \gls{musa} finanziato dal Ministero dell’Università e della Ricerca attraverso il Piano Nazionale di Ripresa e Resilienza.
 
 L'elaborato è organizzato come segue: nel primo capitolo si espone lo stato dell'arte delle tecnologie per l'analisi dati e il calcolo distribuito, in modo tale da introdurre gli aspetti tecnici alla base del lavoro svolto; nel secondo capitolo si illustrano gli algoritmi coinvolti nella tesi; nel terzo capitolo viene descritto nel dettaglio il lavoro svolto, seguendo la divisione del lavoro nelle fasi di \textit{development}, \textit{deployment} e \textit{testing}; nel quarto e ultimo capitolo si riassume il contributo dato da questa tesi e si esplorano i possibili sviluppi futuri.
 
 \chapter{Le tecnologie per l'analisi dati e il calcolo distribuito}
-    %\section{L'\glsentryshort{ia} per l'analisi dati}
+    \section{L'\glsentryshort{ia} per l'analisi dati}
 
-    %\section{Apache Spark}
+    \section{Apache Spark}
 
-    %\section{Kubernetes}
+    \section{Docker}
+
+    \section{Kubernetes}\label{sec:kubernetes}
 
 
 \chapter{Gli algoritmi di analisi dati}
@@ -230,13 +251,26 @@ Un'ulteriore attività svolta è stata quella di aggiornamento della versione di
 \paragraph{Maven}
 I progetti Java sono stati gestiti con Apache Maven, uno strumento per l'amministrazione di progetti software, quindi per risolvere le dipendenze e aggiornare la versione di Spark, l'attività svolta è stata quella di scrivere un nuovo file \gls{pom} per ogni algoritmo; tale file è in formato \gls{xml} e comprende sia i dettagli di configurazione del progetto, sia le informazioni necessarie a Maven per realizzare il pacchetto contenente l'applicazione Java. Il file \gls{pom} contiene delle sezioni che sono dedicate alla struttura del progetto, ovvero in cui sono indicate le relazioni fra le diverse classi; una sezione dedicata alle proprietà del progetto (strettamente dipendenti dal linguaggio e dalle tecnologie utilizzate); una sezione dedicata alla fase di costruzione del pacchetto dell'applicazione Java, dove possono essere configurati vari plugin; un'ultima sezione in cui sono indicate tutte le dipendenze del progetto.
 All'interno di un singolo progetto possono esserci diversi file \gls{pom}, ognuno che gestisce una parte del codice, a diversi livelli di dettaglio: un file più generale può indicare soltanto l'identificativo del gruppo (package) di cui fa parte il progetto, l'identificativo dell'artifatto e i diversi moduli che lo compongono; i file dei singoli moduli poi possono specificare i plugin necessari alla costruzione del file \emph{jar}, così come le dipendenze. Alcuni algoritmi prevedono la presenza di un task Spark dedicato soltanto all'allenamento del modello e un task diverso per effettuare predizioni utilizzando il modello allenato; in questo caso è stato organizzato un unico progetto in cui i due task sono moduli di uno stesso artefatto generale. Un esempio di file \gls{pom} generale è riportato nell'appendice \ref{apx:general_pom}, mentre un esempio di un file di un singolo modulo, contenente sia i plugin sia le dipendenze, è riportato nell'appendice \ref{apx:module_pom}.
+Il funzionamento di Maven si basa sull'utilizzo dei plugin, ovvero degli strumenti che combinano più azioni in sequenza per rendere semplice la compilazione, il testing, il deployment e altre attività comuni durante lo sviluppo software. I plugin vengono configurati all'interno del file \gls{pom}, nell'ambito del lavoro di questa tesi, sono stati configurati, per ciascun task, Apache Maven Assembly Plugin \cite{assembly:2024} e Log4j Transform Maven Plugin \cite{logging:2023}. Il primo consente di costruire un archivio che contiene anche le dipendenze, i moduli, la documentazione, mentre il secondo serve per ottimizzare le chiamate di logging alle API di Log4j, infatti inserisce le chiamate di logging in posizioni statiche, in modo tale da non dover calcolare a runtime la posizione.
 
 \paragraph{\emph{Uber jar}}
 Gli applicativi Java sono solitamente "confezionati" in file archivio, chiamati JAR (da Java Archive), che comprendono sia i file di diverse classi Java, sia i relativi metadati e tutte le risorse che utilizzano; queste generiche risorse possono essere sia file di testo o multimediali, sia altri file JAR.
 I file JAR sono un aspetto fondamentale del linguaggio Java, sia per quanto riguarda la facilità di distribuzione sia per la sicurezza, infatti è possibile inserire in un unico file, detto \emph{uber jar} o \emph{fat jar}, tutti i file delle classi sviluppate per l'applicativo, uniti a tutte le classi che costituiscono le dipendenze, rendendo l'archivio un file completamente autonomo, ovvero eseguibile senza necessità di importare nessuna classe esterna.
 
-\paragraph{Aggiornamento}
-In particolare, l'attività di aggiornamento e riorganizzazione del codice si è svolta in più fasi in cui sono state prima risolte le dipendenze delle classi relative ai singoli algoritmi, svolgendo un test con un dataset di esempio per ciascun task, lanciando l'esecuzione direttamente dall'interno dell'ambiente di sviluppo, in seguito è stata aggiornata la versione di Spark, e sono state svolte minime modifiche al codice Java delle classi per risolvere alcuni problemi di compatibilità relativi all'aggiornamento, solitamente dovuti al fatto che nella nuova versione di Spark alcune classi sono state spostate in librerie differenti rispetto alla versione 2.2.0. Per l'aggiornamento della classe "VectorDisassembler", dopo aver effettuato la \emph{fork} del codice, si è aggiornato il file \gls{pom}, poi si è costruito il nuovo file \emph{jar} che è stato in seguito importato da tutti i task che lo richiedevano. Una volta aggiornati i file di configurazione di tutti i progetti relativi ai singoli algoritmi, sono stati costruiti i file \emph{uber jar}.
+\paragraph{Aggiornamento della versione di Spark}
+In particolare, l'attività di aggiornamento e riorganizzazione del codice si è svolta in più fasi in cui sono state prima risolte le dipendenze delle classi relative ai singoli algoritmi, svolgendo un test con un dataset di esempio per ciascun task, lanciando l'esecuzione direttamente dall'interno dell'ambiente di sviluppo, in seguito è stata aggiornata la versione di Spark, e sono state svolte minime modifiche al codice Java delle classi per risolvere alcuni problemi di compatibilità relativi all'aggiornamento, solitamente dovuti al fatto che nella nuova versione di Spark alcune classi sono state spostate in librerie differenti rispetto alla versione 2.2.0. Per l'aggiornamento della classe "VectorDisassembler", dopo aver effettuato la \emph{fork} del codice, si è aggiornato il file \gls{pom}, poi si è costruito il nuovo file \emph{jar} che è stato in seguito importato da tutti i task che lo richiedevano.
+
+Il plugin Maven Assembly è stato configurato in modo tale che venisse incluso il \emph{Classpath} (\lstinline{<addClasspath>true</addClasspath>}), è stata specificata la classe principale da eseguire una volta avviato l'archivio finale (\lstinline{<mainClass>it.unimi.evotion.tasks.kmeans_model.KmeansModel</mainClass>}), è stato inserito il tipo di descrittore da utilizzare per nominare l'assembly JAR (\lstinline{<descriptorRef>jar-with-dependencies</descriptorRef>}) e poi si è specificata la fase del ciclo di vita di Maven in cui eseguire l'istanza di esecuzione (\lstinline{<phase>package</phase>}). Una volta aggiornati i file di configurazione di tutti i progetti relativi ai singoli algoritmi, sono stati costruiti i file \emph{uber jar}.
+
+Al fine di rendere eseguibili i task Spark in un ambiente distribuito gestito con Kubernetes, è stato fatto un primo test di esecuzione in container Docker dei singoli \emph{fat jar}, in modo tale da individuare un'immagine di partenza che soddisfasse le necessità delle singole classi, inoltre, a puro scopo dimostrativo si è anche effettuata una prova di esecuzione su un cluster Kubernetes eseguito su una sola macchina. In questa fase, sia il file archivio del task sia il dataset di lavoro sono stati aggiunti all'immagine Docker utilizzata per la costruzione dei pod Kubernetes, tuttavia nella configurazione finale, come verrà illustrato in seguito, il file eseguibile e i dati non sono inseriti nell'immagine, ma vengono letti da un sistema di storage distribuito.
+
+Il cluster locale è stato configurato su un dispositivo Apple MacBook Pro con processore Apple M1 Pro e 16 GB di memoria unificata, impostando l'applicativo Docker desktop (utilizzato anche per la gestione del cluster Kubernetes) in modo tale che potesse utilizzare fino a 8 core di CPU e 13 GB di memoria. Da Docker desktop è stato attivato Kubernetes, in modo tale che venisse configurato un cluster con un singolo nodo (master) che contiene i pod dedicati a: \gls{api} server, controller manager, scheduler, etcd, coredns, kube-proxy (si faccia riferimento alla sezione \ref{sec:kubernetes} per la spiegazione delle funzioni dei singoli pod).
+Una volta configurato il cluster, si è utilizzato lo script \emph{spark-submit} per avviare l'esecuzione dei task sul cluster; con questa procedura viene impartito il comando all'\gls{api} server che si occupa di creare un nuovo pod che funge da Spark driver, a sua volta, il driver crea gli esecutori e si connette a tali nodi, per poi eseguire il codice dell'applicazione.
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{images/spark-on-kube.png}
+    \caption[Funzionamento di \emph{spark-submit}]{Funzionamento di \emph{spark-submit}\\ \footnotesize{\textit{Fonte:} \url{https://spark.apache.org/docs/3.5.0/running-on-kubernetes.html}}}
+\end{figure}
 
 \chapter{Conclusioni}
 
