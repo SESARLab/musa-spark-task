@@ -102,6 +102,12 @@
 \newacronym{pom}{POM}{Project Object Model}
 \newacronym{xml}{XML}{eXtensible Markup Language}
 \newacronym{musa}{MUSA}{Multilayered Urban Sustainability Action}
+\newacronym{url}{URL}{Uniform Resource Locator}
+\newacronym{eks}{EKS}{Elastic Kubernetes Service}
+\newacronym{ec2}{EC2}{Elastic Compute Cloud}
+\newacronym{iam}{IAM}{Identity and Access Management}
+\newacronym{emrfs}{EMRFS}{EMR File System}
+\newacronym{hdfs}{HDFS}{Hadoop Distributed File System}
 
 \makeglossaries
 
@@ -244,6 +250,7 @@ Una parte fondamentale del lavoro svolto è stata quella di recuperare degli alg
     % \paragraph{Linear Support Vector Classifier}
 
 \chapter{Recupero e implementazione degli algoritmi}
+\section{Operazioni preliminari}
 La prima fase del lavoro è consistita nel recupero di alcuni algoritmi sviluppati con tecnologia Spark sfruttando la libreria \gls{mllib}, originariamente implementati nell'ambito del progetto EVOTION \cite{anisetti:2018}. Affinché i singoli Spark task fossero eseguibili singolarmente, dopo una prima analisi del codice già sviluppato, si è resa necessaria l'estrazione delle singole classi Java che implementano i diversi algoritmi e la contestuale creazione di un progetto autonomo per ogni algoritmo.
 L'autonomia dei singoli progetti è un requisito necessario per avere la possibilità di creare in maniera semplice i cosiddetti \emph{fat jar} (o \emph{uber jar}) — maggiori dettagli in seguito — e dal momento che le classi sono state estratte da un progetto più grande, è stato necessario risolvere le dipendenze perché ogni algoritmo potesse importare tutte le classi e librerie esterne di cui necessitava.
 Un'ulteriore attività svolta è stata quella di aggiornamento della versione di Spark dalla 2.2.0 alla 3.5.0, mantenendo Java 8; dal momento che numerosi algoritmi fra quelli coinvolti nel lavoro utilizzano la classe "VectorDisassembler", realizzata in Scala 2.11 per Spark 2.2.0 da un singolo sviluppatore e non più aggiornata, è stata creata una \emph{fork} della classe in modo da poter aggiornare la versione di Scala e così rendere il codice compatibile con Spark 3.5.0.
@@ -262,14 +269,34 @@ In particolare, l'attività di aggiornamento e riorganizzazione del codice si è
 
 Il plugin Maven Assembly è stato configurato in modo tale che venisse incluso il \emph{Classpath} (\lstinline{<addClasspath>true</addClasspath>}), è stata specificata la classe principale da eseguire una volta avviato l'archivio finale (\lstinline{<mainClass>it.unimi.evotion.tasks.kmeans_model.KmeansModel</mainClass>}), è stato inserito il tipo di descrittore da utilizzare per nominare l'assembly JAR (\lstinline{<descriptorRef>jar-with-dependencies</descriptorRef>}) e poi si è specificata la fase del ciclo di vita di Maven in cui eseguire l'istanza di esecuzione (\lstinline{<phase>package</phase>}). Una volta aggiornati i file di configurazione di tutti i progetti relativi ai singoli algoritmi, sono stati costruiti i file \emph{uber jar}.
 
-Al fine di rendere eseguibili i task Spark in un ambiente distribuito gestito con Kubernetes, è stato fatto un primo test di esecuzione in container Docker dei singoli \emph{fat jar}, in modo tale da individuare un'immagine di partenza che soddisfasse le necessità delle singole classi, inoltre, a puro scopo dimostrativo si è anche effettuata una prova di esecuzione su un cluster Kubernetes eseguito su una sola macchina. In questa fase, sia il file archivio del task sia il dataset di lavoro sono stati aggiunti all'immagine Docker utilizzata per la costruzione dei pod Kubernetes, tuttavia nella configurazione finale, come verrà illustrato in seguito, il file eseguibile e i dati non sono inseriti nell'immagine, ma vengono letti da un sistema di storage distribuito.
+\section{Esecuzione su un cluster Kubernetes locale}
+Al fine di rendere eseguibili i task Spark in un ambiente distribuito gestito con \gls{kube}, è stato fatto un primo test di esecuzione in container \gls{docker} dei singoli \emph{fat jar}, in modo tale da individuare un'immagine di partenza che soddisfasse le necessità delle singole classi, inoltre, a puro scopo dimostrativo si è anche effettuata una prova di esecuzione su un cluster \gls{kube} eseguito su una sola macchina. In questa fase, sia il file archivio del task sia il dataset di lavoro sono stati aggiunti all'immagine \gls{docker} utilizzata per la costruzione dei pod \gls{kube}, tuttavia nella configurazione finale, come verrà illustrato in seguito, il file eseguibile e i dati non sono inseriti nell'immagine, ma vengono letti da un sistema di storage distribuito. Per ottenere un'immagine \gls{docker} da usare in \gls{kube}, è stato usato lo strumento \lstinline{docker-image-tool.sh}, messo a disposizione dalla distribuzione Spark, utile per costruire e pubblicare immagini \gls{docker} in maniera immediata.
 
-Il cluster locale è stato configurato su un dispositivo Apple MacBook Pro con processore Apple M1 Pro e 16 GB di memoria unificata, impostando l'applicativo Docker desktop (utilizzato anche per la gestione del cluster Kubernetes) in modo tale che potesse utilizzare fino a 8 core di CPU e 13 GB di memoria. Da Docker desktop è stato attivato Kubernetes, in modo tale che venisse configurato un cluster con un singolo nodo (master) che contiene i pod dedicati a: \gls{api} server, controller manager, scheduler, etcd, coredns, kube-proxy (si faccia riferimento alla sezione \ref{sec:kubernetes} per la spiegazione delle funzioni dei singoli pod).
-Una volta configurato il cluster, si è utilizzato lo script \emph{spark-submit} per avviare l'esecuzione dei task sul cluster; con questa procedura viene impartito il comando all'\gls{api} server che si occupa di creare un nuovo pod che funge da Spark driver, a sua volta, il driver crea gli esecutori e si connette a tali nodi, per poi eseguire il codice dell'applicazione.
+Il \gls{cluster} locale è stato configurato su un dispositivo Apple MacBook Pro con processore Apple M1 Pro e 16 GB di memoria unificata, impostando l'applicativo \gls{docker} desktop (utilizzato anche per la gestione del \gls{cluster} \gls{kube}) in modo tale che potesse usare fino a 8 core di CPU e 13 GB di memoria. Da \gls{docker} desktop è stato attivato \gls{kube}, in modo tale che venisse configurato un \gls{cluster} con un singolo nodo (master) che contiene i pod dedicati a: \gls{api} server, controller manager, scheduler, etcd, coredns, kube-proxy (si faccia riferimento alla sezione \ref{sec:kubernetes} per la spiegazione delle funzioni dei singoli pod).
+Una volta configurato il \gls{cluster}, si è utilizzato lo script \lstinline{spark-submit} per avviare l'esecuzione dei task sul \gls{cluster}; con questa procedura viene impartito il comando all'\gls{api} server che si occupa di creare un nuovo pod che funge da Spark driver, a sua volta, il driver crea gli esecutori e si connette a tali nodi, per poi eseguire il codice dell'applicazione.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{images/spark-on-kube.png}
-    \caption[Funzionamento di \emph{spark-submit}]{Funzionamento di \emph{spark-submit}\\ \footnotesize{\textit{Fonte:} \url{https://spark.apache.org/docs/3.5.0/running-on-kubernetes.html}}}
+    \caption[Funzionamento di \lstinline{spark-submit}]{Funzionamento di \lstinline{spark-submit}\\ \footnotesize{\textit{Fonte:} \url{https://spark.apache.org/docs/3.5.0/running-on-kubernetes.html}}}
+\end{figure}
+
+Per rendere più agevole l'attività di recupero degli algoritmi, si è scelto di configurare le proprietà di Spark non attraverso le \gls{api} di Java, ma con i parametri dello strumento \lstinline{spark-submit}, in questo modo non è stato necessario modificare il codice e in più se ne favorisce il riuso, perché al variare dell'infrastruttura di deployment non serve apportare modifiche al codice, ma basta cambiare i paramentri dello strumento di lancio. Di seguito si riportano le impostazioni utilizzate per il lancio sul \gls{cluster} locale:
+\begin{enumerate}
+    \item \lstinline{--master} serve per indicare l'\gls{url} dello Spark master, in particolare l'indirizzo dell'\gls{api} server \gls{kube};
+    \item \lstinline{--deploy-mode} definisce dove istanziare il nodo driver, in modalità \lstinline{client} è avviato localmente e quindi si interfaccia ai nodi del \gls{cluster} come nodo esterno, mentre in modalità \lstinline{cluster} viene avviato direttamente sui nodi worker;
+    \item con \lstinline{--class} si specifica la classe da eseguire all'interno dell'archivio JAR;
+    \item attraverso l'utilizzo di \lstinline{--conf} si possono impostare diverse proprietà per la configurazione di Spark, in particolare è utile indicare il namespace in cui avviare i pod per eseguire il task (con \lstinline{spark.kubernetes.namespace}) e l'immagine con cui avviare i container (con \lstinline{spark.kubernetes.container.image}), inoltre nel caso in cui sia necessaria l'autenticazione per avere il permesso di esecuzione all'interno del \gls{cluster}, si indica l'account con \lstinline{spark.kubernetes.authenticate.driver.serviceAccountName}.
+\end{enumerate}
+Oltre ai parametri di configurazione, lo strumento richiede che venga indicato il JAR dell'applicazione da eseguire ed eventuali argomenti, nel caso dei task Spark coinvolti nel lavoro, è stato indicato il percorso interno all'immagine in cui è stato inserito l'archivio Java, il percorso del dataset e gli argomenti specifici per ciascun algoritmo.
+
+\section{Esecuzione su un cluster AWS EKS}
+Per avvicinarsi alla configurazione di deployment finale, si è configurato un \gls{cluster} \gls{kube} utilizzando il servizio di cloud computing \gls{eks} offerto da \gls{aws}. Sfruttando lo strumento \lstinline{eksctl} si è creato un \gls{cluster} di istanze di tipo \gls{ec2} \emph{m5.xlarge} — indicate per computazione "general batch processing" — dotate di 4 CPU virtuali e 16 GiB di memoria, ed è stato esposto l'accesso remoto tramite ssh. All'interno del \gls{cluster} si è creato un namespace dedicato all'esecuzione dei task, poi una mappatura (\emph{iamidentitymapping}) fra uno specifico utente \gls{kube} e il ruolo dedicato all'amministrazione dei container, in seguito è stato creato un ruolo \gls{iam} per l'esecuzione dei task e vi è stata associata una policy che consentisse l'accesso completo ad uno specifico bucket \gls{s3} e al servizio di monitoraggio Amazon CloudWatch, così come una policy per consentire l'amministrazione dei \gls{cluster} virtuali e il lancio di "job" software (fare riferimento all'appendice \ref{apx:policy} per il contenuto delle policy citate). Infine è stato creato un \gls{cluster} virtuale per l'esecuzione vera e propria dei task, indicando come provider dei container il \gls{cluster} fisico appena configurato.
+
+Con un'infrastruttura così configurata, è possibile sia eseguire i task utilizzando direttamente lo strumento \lstinline{spark-submit}, come precedentemente illustrato, ma eseguendolo da un nodo appartenente al cluster, oppure si può utilizzare \gls{eks} StartJobRun, uno strumento pensato appositamente per l'esecuzione di Spark task in un cluster \gls{eks}, attraverso il quale viene configurato indirettamente \lstinline{spark-submit}. Nell'appendice \ref{apx:startjob} si può vedere l'esempio di configurazione dello strumento per l'esecuzione del task che implementa l'algoritmo kmeans: con questa nuova configurazione, a differenza dell'esecuzione su cluster locale, l'archivio JAR e il dataset passati al tool di esecuzione, così come il percorso in cui scrivere i risultati dell'algoritmo, non sono locali all'immagine eseguita dal container nel \gls{cluster}, ma sono percorsi in un bucket \gls{s3}; la comunicazione fra lo Spark driver e il bucket S3 avviente attraverso \gls{emrfs}, un'implementazione di \gls{hdfs} usata per leggere e scrivere file dai cluster \gls{emr} a \gls{s3} \cite{emrfs:2024}.
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{images/infrastructure.png}
+    \caption{Schema riassuntivo dell'infrastruttura configurata con Amazon EKS}
 \end{figure}
 
 \chapter{Conclusioni}
@@ -405,6 +432,150 @@ Una volta configurato il cluster, si è utilizzato lo script \emph{spark-submit}
     </dependencies>
 </project>
 \end{lstlisting}
+
+\chapter{\gls{iam} policies}\label{apx:policy}
+Trust policy per la creazione del ruolo per l'esecuzione dei task, si consente al solo utente \emph{admin} di assumere il ruolo:
+\begin{lstlisting}
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::[ID]:user/admin" },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+\end{lstlisting}
+\textit{Nota: rispetto al file originale, l'ID del cluster è stato sostituito da \emph{\lstinline{[ID]}}.}
+
+Policy che garantisce l'accesso al bucket \gls{s3} di logging (situato all'Amazon Resource Name indicato) e a CloudWatch, associata al ruolo sopracitato:
+\begin{lstlisting}
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::logs-tasks-stentella",
+                "arn:aws:s3:::logs-tasks-stentella/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams"
+            ],
+            "Resource": [
+                "arn:aws:logs:*:*:*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "arn:aws:logs:*:*:log-group:task-group:log-stream:task/*"
+            ]
+        }
+    ]
+}
+\end{lstlisting}
+
+Policy per l'amministrazione dei cluster virtuali e il lancio dei Job:
+\begin{lstlisting}
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateServiceLinkedRole"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "iam:AWSServiceName": "emr-containers.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "emr-containers:CreateVirtualCluster",
+                "emr-containers:ListVirtualClusters",
+                "emr-containers:DescribeVirtualCluster",
+                "emr-containers:DeleteVirtualCluster"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "emr-containers:StartJobRun",
+                "emr-containers:ListJobRuns",
+                "emr-containers:DescribeJobRun",
+                "emr-containers:CancelJobRun"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+\end{lstlisting}
+
+\chapter{Configurazione di EKS StartJobRun}\label{apx:startjob}
+\begin{lstlisting}
+{
+    "name": "kmeans",
+    "virtualClusterId": "[VIRTUAL-ID]",
+    "executionRoleArn": "arn:aws:iam::[ID]:role/EMRContainers-JobExecutionRole",
+    "releaseLabel": "emr-7.0.0-latest",
+    "jobDriver": {
+        "sparkSubmitJobDriver": {
+            "entryPoint": "arn:aws:s3:::test-tasks-stentella/kmeans-1.0-jar-with-dependencies.jar",
+            "entryPointArguments": ["s3://test-tasks-stentella/dataset.csv", "5",
+            "s3://test-tasks-stentella/result"],
+            "sparkSubmitParameters": "\
+            --master k8s://https://E5F648AFE82BAF20017B44F112918FBE.gr7.us-east-1 \
+            .eks.amazonaws.com \
+            --class it.unimi.evotion.tasks.kmeans.Kmeans \
+            --conf spark.kubernetes.container.image= \
+            755674844232.dkr.ecr.us-east-1.amazonaws.com/spark/emr-7.0.0:latest \
+            --conf spark.executor.instances=5 \
+            --deploy-mode cluster"
+        }
+    },
+    "configurationOverrides": {
+        "applicationConfiguration": [
+            {
+                "classification": "spark-defaults",
+                "properties": {
+                    "spark.driver.memory":"2G"
+                }
+            }
+        ],
+        "monitoringConfiguration": {
+            "persistentAppUI": "ENABLED",
+            "cloudWatchMonitoringConfiguration": {
+                "logGroupName": "task-group",
+                "logStreamNamePrefix": "task"
+            },
+            "s3MonitoringConfiguration": {
+                "logUri": "s3://logs-tasks-stentella"
+            }
+        }
+    }
+}
+\end{lstlisting}
+\textit{Nota: rispetto al file originale, l'ID del cluster virtuale è stato sostituito da \emph{\lstinline{[VIRTUAL-ID]}}, quello del cluster è stato sostituito da \emph{\lstinline{[ID]}}.}
 
 \blankpage
 
