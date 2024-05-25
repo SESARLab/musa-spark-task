@@ -77,13 +77,14 @@
 \newglossaryentry{docker}{name={Docker}, description={Strumento per eseguire e amministrare i \gls{container}}}
 \newglossaryentry{kube}{name={Kubernetes}, description={Orchestratore per gestire un \gls{cluster} composto da \gls{container}}}
 \newglossaryentry{yarn}{name={Hadoop Yarn}, description={Yet Another Resource Negotiator, è la tecnologia di gestione delle risorse e pianificazione dell'esecuzione task nel framework di elaborazione distribuita open source Hadoop}}
+\newglossaryentry{algoritmi all-reduce}{name={algoritmi all-reduce}, description={algoritmi utilizzati nell'ambito della computazione parallela, che aggregano gli \emph{array} (o i tensori) utilizzati da processi indipendenti in un'unica struttura dati}}
 
 % acronimi
 \newacronym{aws}{AWS}{Amazon Web Services}
 \newacronym{cpu}{CPU}{Central Processing Unit}
 \newacronym{dl}{DL}{Deep Learning}
 \newacronym{emr}{EMR}{Elastic MapReduce}
-\newacronym{gpu}{GPU}{Graphic Processing Unit}
+\newacronym{gpu}{GPU}{Graphics Processing Unit}
 \newacronym{ia}{IA}{Intelligenza Artificiale}
 \newacronym{iot}{IoT}{Internet of Things}
 \newacronym{mllib}{MLlib}{Machine Learning library}
@@ -108,6 +109,9 @@
 \newacronym{iam}{IAM}{Identity and Access Management}
 \newacronym{emrfs}{EMRFS}{EMR File System}
 \newacronym{hdfs}{HDFS}{Hadoop Distributed File System}
+\newacronym{rpc}{RPC}{Remote Procedure Call}
+\newacronym{nccl}{NCCL}{NVIDIA Collective Communications Library}
+\newacronym{tpu}{TPU}{Tensor Processing Unit}
 
 \makeglossaries
 
@@ -184,7 +188,7 @@ L'obiettivo del lavoro svolto durante il tirocinio interno, è quello di recuper
 L'elaborato è organizzato come segue: nel primo capitolo si espone lo stato dell'arte delle tecnologie per l'analisi dati e il calcolo distribuito, in modo tale da introdurre gli aspetti tecnici alla base del lavoro svolto; nel secondo capitolo si illustrano gli algoritmi coinvolti nella tesi; nel terzo capitolo viene descritto nel dettaglio il lavoro svolto, seguendo la divisione del lavoro nelle fasi di \textit{development}, \textit{deployment} e \textit{testing}; nel quarto e ultimo capitolo si riassume il contributo dato da questa tesi e si esplorano i possibili sviluppi futuri.
 
 \chapter{Le tecnologie per l'analisi dati e il calcolo distribuito}
-    \section{L'\glsentryshort{ia} per l'analisi dati}
+    \section{L'\glsentryshort{ia} per l'analisi dati}\label{sec:ai}
 
     \section{Apache Spark}
 
@@ -285,6 +289,7 @@ Per rendere più agevole l'attività di recupero degli algoritmi, si è scelto d
     \item \lstinline{--master} serve per indicare l'\gls{url} dello Spark master, in particolare l'indirizzo dell'\gls{api} server \gls{kube};
     \item \lstinline{--deploy-mode} definisce dove istanziare il nodo driver, in modalità \lstinline{client} è avviato localmente e quindi si interfaccia ai nodi del \gls{cluster} come nodo esterno, mentre in modalità \lstinline{cluster} viene avviato direttamente sui nodi worker;
     \item con \lstinline{--class} si specifica la classe da eseguire all'interno dell'archivio JAR;
+    \item il termine indicato in \lstinline{--name} è quello utilizzato da \gls{kube} per nominare le risorse create per l'esecuzione dei task, come i driver e gli executors;
     \item attraverso l'utilizzo di \lstinline{--conf} si possono impostare diverse proprietà per la configurazione di Spark, in particolare è utile indicare il namespace in cui avviare i pod per eseguire il task (con \lstinline{spark.kubernetes.namespace}) e l'immagine con cui avviare i container (con \lstinline{spark.kubernetes.container.image}), inoltre nel caso in cui sia necessaria l'autenticazione per avere il permesso di esecuzione all'interno del \gls{cluster}, si indica l'account con \lstinline{spark.kubernetes.authenticate.driver.serviceAccountName}.
 \end{enumerate}
 Oltre ai parametri di configurazione, lo strumento richiede che venga indicato il JAR dell'applicazione da eseguire ed eventuali argomenti, nel caso dei task Spark coinvolti nel lavoro, è stato indicato il percorso interno all'immagine in cui è stato inserito l'archivio Java, il percorso del dataset e gli argomenti specifici per ciascun algoritmo.
@@ -298,6 +303,53 @@ Con un'infrastruttura così configurata, è possibile sia eseguire i task utiliz
     \includegraphics[width=\linewidth]{images/infrastructure.png}
     \caption{Schema riassuntivo dell'infrastruttura configurata con Amazon EKS}
 \end{figure}
+
+\section{Test di performance dell’esecuzione distribuita}
+Per dimostrare l'effettiva distribuzione del carico computazionale sul \gls{cluster} si sono svolte molteplici esecuzioni degli algoritmi \gls{ml} sia sull'infrastruttura \gls{kube} locale, sia su quella sul servizio di cloud computing, misurando il tempo di esecuzione ed analizzando sia i file di log sia le informazioni riguardanti lo stato del \gls{cluster} nel corso dell'esecuzione dei task.
+
+Il flusso di lavoro generale atteso e che si è osservato è il seguente:
+\begin{itemize}
+    \item Il nodo dedicato allo Spark master richiede a \gls{kube} un numero di esecutori (executors) pari a quello indicato nella fase di lancio del workload, quindi viene creato un numero di pod pari al numero di executors;
+    \item Gli indirizzi IP di ciascun executor sono registrati nel \gls{cluster} e gli viene assegnato un numero identificativo;
+    \item Lo Spark master assegna l'esecuzione di un task a ogni executor, fino a quando non sono finiti tutti i task set di tutti i passi che compongono il workload;
+    \item Una volta che tutti i task sono stati completati e i nodi executors hanno riportato il risultato allo Spark driver, il lavoro è concluso, quindi gli executors vengono terminati e il pod dedicato allo Spark driver entra nello stato "completed" (qualora il workload preveda la scrittura dei risultati in specifici file, tale azione viene fatta dal driver).
+\end{itemize}
+
+Dall'analisi dei file di log — di cui si riporta un estratto per quanto riguarda l'esecuzione di un algoritmo sul cluster \gls{aws} \gls{eks} nell'appendice \ref{apx:logs} — si è trovata conferma della corretta esecuzione.
+
+\section{Studio e implementazione di un algoritmo di test in Tensorflow}
+Come illustrato nella sezione \ref{sec:ai}, la libreria Tensorflow è estremamente utilizzata in molti ambiti del machine learning, grazie alla sua semplicità d'uso e alla possibilità di ottimizzare l'esecuzione su hardware specifico, pertanto si è studiata l'implementazione di nuovi algoritmi sfruttando la libreria in questione, superando l'approccio con Java, pur mantenendo la possibilità di esecuzione su \gls{cluster} Spark.
+
+Tensorflow ha la sua \gls{api} — \lstinline{tf.distribute} — che permette la distribuzione sia della computazione da parte di modelli predittivi già allenati, sia del training; è pensata per funzionare sia con il codice che utilizza \gls{api} fornite da librerie di alto livello, come \lstinline{Model.fit} di Keras, sia con programmi che usano Tensorflow più a basso livello, come quelli con \emph{training step} personalizzati \cite{tfdis:2024}.
+La grande automazione presente nei componenti della libreria Tensorflow consente di distribuire la computazione del codice applicando delle modifiche minime: occorre definire una "strategia" di distribuzione, utilizzare metodi specifici per configurare i dispositivi coinvolti in modo da comunicargli il ruolo che devono assumere nella computazione, creare il modello all'interno dello \emph{scope} della strategia appena definita. Di seguito si discute nel dettaglio ciascun passaggio.
+
+\paragraph{Definizione della strategia}
+Le strategie si differenziano sia per la tipologia di piattaforma hardware che utilizzano, sia per la modalità di parallelizzazione del training che sfruttano, quest'ultima può essere sincrona, quindi con tutti i \emph{workers} che lavorano contemporaneamente su diverse sezioni del dataset di input e poi effettuano una sincronizzazione ad ogni step, oppure asincrona, ovvero con un lavoro indipendente e aggiornamento asincrono delle variabili.
+Esistono 7 differenti strategie di distribuzione del calcolo:
+\begin{enumerate}
+    \item per distribuire il training in maniera sincrona su più \gls{gpu} su uno stesso dispositivo, viene utilizzata MirroredStrategy, con cui viene creata una replica per ogni variabile del modello su ciascuna \gls{gpu}, poi i valori sono tenuti sincronizzati e vengono aggiornati utilizzando efficenti \gls{algoritmi all-reduce} che solitamente usano \gls{nccl};
+    \item TPUStrategy viene usata per effettuare il training distribuito su un \gls{cluster} di Tensor Processing Units;
+    \item la strategia adottata in questo lavoro, MultiWorkerMirroredStrategy, serve per la distribuzione sincrona su diversi dispositivi, offrendo la possibilità di avere più \gls{gpu} su ciascun dispositivo, crea una copia di ogni variabile del modello su ciascun worker. La comunicazione fra i dispositivi può avvenire con \gls{rpc} (compatibile CPU e \gls{gpu}) o \gls{nccl} (solo per \gls{gpu});
+    \item con ParameterServerStrategy si implementa un \gls{cluster} per il training asincrono, composto da parameter server e da worker, dove i primi creano e conservano le variabili del modello, mentre i secondi leggono le variabili dai server per poi aggiornarle e riscriverle sui server, senza mai sincronizzarsi fra loro;
+    \item un'altra strategia utilizzabile su un solo dispositivo è CentralStorageStrategy, la quale prevede che le variabili siano soltanto sulla CPU, mentre le operazioni di aggiornamento sono svolte distribuite sulle \gls{gpu};
+    \item OneDeviceStrategy serve per memorizzare tutte le variabili ed eseguire qualsiasi funzione su uno specifico dispositivo, come una singola \gls{gpu};
+    \item la strategia di default, ovvero quella utilizzata nel caso in cui non venga definita una delle altre strategie, non distribuisce il carico computazionale, serve soltanto per scrivere librerie o programmi che possano gestire ogni tipo di distribuzione e funzionino anche senza distribuire la computazione.
+\end{enumerate}
+
+\paragraph{Configurazione}
+Una volta definita la strategia, qualora si voglia parallelizzare la computazione su un \gls{cluster}, bisogna configurare i dispositivi coinvolti in modo tale che conoscano il ruolo che devono assumere nel training o nell'utilizzo del modello predittivo. Nel caso di TPUStrategy si utilizzano direttamente le \gls{api} Tensorflow per indicare l'indirizzo del \gls{tpu} cluster resolver, connettersi e inizializzare il sistema, poi la distribuzione è gestita in maniera automatica dalla libreria.
+Con strategie che coinvolgono realmente più worker, come MultiWorkerMirroredStrategy e ParameterServerStrategy, si ha un controllo preciso su tutti i dispositivi del \gls{cluster}: nella variabile d'ambiente TF\_CONFIG, scritta con formato JSON, si configura la sezione \lstinline{cluster} — un dizionario contenente gli indirizzi IP e i numeri di porta di tutti i nodi del cluster, distinguendo fra \lstinline{worker} ed eventualmente parameter server (\lstinline{ps}) (è un'informazione uguale per tutti i nodi) — e la sezione \lstinline{task} che specifica il tipo e l'indice di un nodo specifico, quello con indice pari a 0 per prassi è il nodo chief che, oltre a svolgere i compiti di un normale worker, si occupa anche di salvare i checkpoint e scrivere i \emph{summary files} per TensorBoard. In aggiunta alla configurazione dei singoli nodi, è possibile definire la modalità di comunicazione fra dispositivi, utilizzando le \gls{api} di Tensorflow e scegliendo fra \gls{rpc} (\lstinline{CommunicationImplementation.RING}) e \gls{nccl} (\lstinline{CommunicationImplementation.NCCL}).
+
+L'unica modifica al codice necessaria per distribuire il training, una volta definita la strategia, è quella di effettuare le chiamate alle \gls{api} per costruire e compilare il modello all'interno dello scope della strategia.
+
+\paragraph{Deployment su \gls{cluster} \gls{kube}}
+Per fare training distribuito con TensorFlow è preferibile configurare il cluster con uno StatefulSet anziché un Deployment in modo tale che ogni pod abbia un'identità stabile in rete; così facendo, ogni replica dello StatefulSet rappresenta un nodo worker.
+Per eseguire un task in maniera distribuita, è stato creato un file in formato yaml, in cui è stato configurato uno StatefulSet con 3 repliche, su ognuna delle quali è stata definita la variabile TF\_CONFIG in modo tale che ciascuna replica conoscesse gli indirizzi degli altri componenti del \gls{cluster}. Il codice python del modello — una rete neurale convoluzionale per il riconoscimento dei caratteri scritti a mano — è stato inserito in un'immagine \gls{docker}, caricata su Docker Hub, in questo modo al momento della creazione del \gls{cluster} si è fatto il pull dell'immagine, poi è stato eseguito il codice su ciascun pod.
+
+\paragraph{Deployment su un \gls{cluster} Spark esistente}
+Qualora si voglia distribuire il training su un cluster Spark già esistente, all'interno dell'ecosistema Tensorflow è stato sviluppato un apposito componente che consente la distribuzione in maniera immediata. La funzione \lstinline{MirroredStrategyRunner} all'interno del pacchetto \lstinline{spark_tensorflow_distributor} può essere utilizzata in un modo del tutto simile a quello descritto nei precedenti paragrafi, infatti è costruita sulla base di MultiWorkerMirroredStrategy. L'utilizzo classico prevede di incapsulare il codice da eseguire su un singolo nodo all'interno di una funzione, poi si passa tale funzione a \lstinline{MirroredStrategyRunner.run()}, eventualmente configurando il runner in modo tale da definire i seguenti parametri: il numero totale di \gls{gpu} o CPU utilizzabili da Spark (\lstinline{num_slots}), se deve essere eseguito in locale sullo Spark driver o distribuito sui worker (\lstinline{local_mode}), se deve utilizzare la \gls{gpu} (\lstinline{use_gpu}), il nome della risorsa che Spark usa per lo scheduling della \gls{gpu} (\lstinline{gpu_name}), se il codice fornito per il singolo worker implementa una strategia personalizzata — ovvero una di quelle elencate precedentemente — o meno (\lstinline{use_custom_strategy}).
+
+\section{Deployment su infrastruttura MUSA}
 
 \chapter{Conclusioni}
 
@@ -576,6 +628,25 @@ Policy per l'amministrazione dei cluster virtuali e il lancio dei Job:
 }
 \end{lstlisting}
 \textit{Nota: rispetto al file originale, l'ID del cluster virtuale è stato sostituito da \emph{\lstinline{[VIRTUAL-ID]}}, quello del cluster è stato sostituito da \emph{\lstinline{[ID]}}.}
+
+\chapter{Estratto dai log di un esecuzione su cluster EKS}\label{apx:logs}
+\begin{lstlisting}
+[...]
+24/03/02 08:11:55 INFO ExecutorPodsAllocator: Going to request 4 executors from Kubernetes for ResourceProfile Id: 0, target: 5, known: 0, sharedSlotFromPendingPods: 2147483647.
+[...]
+24/03/02 08:12:02 INFO KubernetesClusterSchedulerBackend$KubernetesDriverEndpoint: Registered executor NettyRpcEndpointRef(spark-client://Executor) (192.168.3.216:50974) with ID 1,  ResourceProfileId 0
+24/03/02 08:12:02 INFO BlockManagerMasterEndpoint: Registering block manager 192.168.3.216:46787 with 408.9 MiB RAM, BlockManagerId(1, 192.168.3.216, 46787, None)
+24/03/02 08:12:02 INFO KubernetesClusterSchedulerBackend$KubernetesDriverEndpoint: Registered executor NettyRpcEndpointRef(spark-client://Executor) (192.168.58.9:37568) with ID 2,  ResourceProfileId 0
+24/03/02 08:12:02 INFO KubernetesClusterSchedulerBackend$KubernetesDriverEndpoint: Registered executor NettyRpcEndpointRef(spark-client://Executor) (192.168.47.240:41520) with ID 4,  ResourceProfileId 0
+24/03/02 08:12:03 INFO KubernetesClusterSchedulerBackend$KubernetesDriverEndpoint: Registered executor NettyRpcEndpointRef(spark-client://Executor) (192.168.27.77:37000) with ID 3,  ResourceProfileId 0
+[...]
+24/03/02 08:12:05 INFO TaskSchedulerImpl: Adding task set 0.0 with 20 tasks resource profile 0
+24/03/02 08:12:05 INFO TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0) (192.168.58.9, executor 2, partition 0, PROCESS_LOCAL, 1007791 bytes)
+24/03/02 08:12:05 INFO TaskSetManager: Starting task 1.0 in stage 0.0 (TID 1) (192.168.3.216, executor 1, partition 1, PROCESS_LOCAL, 1007796 bytes)
+24/03/02 08:12:05 INFO TaskSetManager: Starting task 2.0 in stage 0.0 (TID 2) (192.168.27.77, executor 3, partition 2, PROCESS_LOCAL, 1007796 bytes)
+24/03/02 08:12:05 INFO TaskSetManager: Starting task 3.0 in stage 0.0 (TID 3) (192.168.47.240, executor 4, partition 3, PROCESS_LOCAL, 1007796 bytes)
+[...]
+\end{lstlisting}
 
 \blankpage
 
