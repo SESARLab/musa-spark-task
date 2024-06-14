@@ -285,7 +285,7 @@ L'elaborato è organizzato come segue: nel capitolo \ref{ch:tec} si espone lo st
 
     \section{Kubernetes}\label{sec:kubernetes}
         L'orchestratore \gls{kube} serve per amministrare grandi sistemi software di microservizi, automatizzando buona parte della gestione e così migliorando l'affidabilità e la scalabilità dei sistemi. Le risorse gestite con \gls{kube} sono organizzate in un \gls{cluster}, ossia un insieme di nodi, fisici o virtuali, che eseguono diversi processi. Su ogni nodo vengono eseguiti uno o più \emph{Pod} che sono un'astrazione dei \gls{container}.
-        \gls{kube} garantisce load-balancing sui container esposti in rete, inoltre gestisce in maniera automatica e ottimizzata i sistemi di storage. I \gls{container} che incorrono in un errore vengono automaticamente riavviati, e in generale lo stato del \gls{cluster} viene mantenuto come da configurazione.
+        \gls{kube} garantisce load-balancing sui container esposti in rete, inoltre gestisce in maniera automatica e ottimizzata i sistemi di storage. I \gls{container} che incorrono in un errore vengono automaticamente riavviati, e in generale lo stato del \gls{cluster} viene mantenuto come da configurazione. Le risorse possono essere isolate in gruppi all'interno di uno stesso \gls{cluster} utilizzando i namespace. I nomi devono essere unici all'interno dello stesso namespace, ma non fra namespace diversi.
 
         Al cuore del funzionamento di \gls{kube} c'è il \emph{Control Plane}, un nodo su cui sono in esecuzione i principali processi di gestione di un \gls{cluster}. Il primo è l'\gls{api} Server che è l'interfaccia principale per l'accesso al \gls{cluster} e in particolare è il componente con cui la web \gls{ui}, i comandi della \gls{cli} e le \gls{api} dei linguaggi di scripting si interfacciano. Il Controller Manager si occupa di controllare la composizione del \gls{cluster}, dunque è fondamentale, per esempio, per avviare un nuovo \gls{container} nel momento in cui uno in esecuzione dovesse incorrere in un errore. Lo Scheduler si occupa di decidere su quale nodo worker eseguire un \gls{container} in base al carico computazionale che ciascun nodo sta sopportando. Lo storage etcd contiene lo stato corrente del \gls{cluster} \gls{kube}, fondamentale per la disaster recovery.
 
@@ -296,7 +296,7 @@ L'elaborato è organizzato come segue: nel capitolo \ref{ch:tec} si espone lo st
 
         I dati persistenti sono memorizzati nei volumi, i quali possono essere locali, ovvero su un nodo del \gls{cluster}, o remoti. In entrambi i casi il volume non è gestito da \gls{kube}, quindi la creazione e la formattazione di tali unità di archiviazione va fatta manualmente.
 
-        Sui nodi worker sono in esecuzione due processi fondamentali: kube-proxy e CoreDNS. Il primo serve per la gestione degli indirizzi IP quando vengono utilizzati i Service. Al momento della creazione di un Service, l'\gls{api} Server gli assegna un IP virtuale e lo notifica al kube-proxy. Questo, utilizzando \lstinline{iptables}, rende indirizzabile tale IP all'interno del nodo in cui è in esecuzione. CoreDNS è un server DNS che serve per la risoluzione interna dei nomi di dominio e può essere utilizzato per la procedura di indirizzamento dei Service.
+        Su tutti i nodi diversi dal Control Plane sono in esecuzione kubelet e kube-proxy. Il primo si assicura che i container configurati siano in esecuzione all'interno dei Pod, mentre il secondo controlla le regole relative alla comunicazione in rete, così da rendere concrete le configurazioni dei Service. Al momento della creazione di un Service, l'\gls{api} Server gli assegna un IP virtuale e lo notifica al kube-proxy. Questo, utilizzando \lstinline{iptables}, rende indirizzabile tale IP all'interno del nodo in cui è in esecuzione. Un ulteriore processo presente sui nodi worker è CoreDNS: un server DNS che serve per la risoluzione interna dei nomi di dominio e può essere utilizzato per la procedura di indirizzamento dei Service.
 
         Un ulteriore livello di astrazione rispetto ai Pod è rappresentato da Deployment e StatefulSet. Per gestire in modo automatico lo scaling delle risorse e l'avvio di nuovi Pod in caso di errore, si configura il \gls{cluster} utilizzando Deployment per i nodi che non hanno uno stato e StatefulSet per i nodi che lo hanno, come i database.
 
@@ -308,7 +308,6 @@ L'elaborato è organizzato come segue: nel capitolo \ref{ch:tec} si espone lo st
         \paragraph{Spark su Kubernetes}
         A partire dalla versione di Spark 2.3 è possibile usare \gls{kube} come scheduler per uno Spark \gls{cluster}. L'amministrazione del sistema tramite \gls{kube}, come visto, offre una grande possibilità di automazione e configurazione avanzata.
         Grazie all'uso di un orchestratore avanzato è possibile sviluppare pipeline per l'elaborazione dati molto avanzate ed eseguire in maniera semplice diversi algoritmi \gls{ml} all'interno del \gls{cluster}. Un secondo vantaggio fondamentale è quello di poter cambiare facilmente l'infrastruttura fisica sottostante al \gls{cluster}. Come si dimostra in questo lavoro, infatti, è possibile passare da un cluster in esecuzione su Platform as a Service fornita da \gls{aws} ad uno on-premises come quello presente sull'infrastruttura \gls{musa}, senza ripensare l'architettura di deployment.
-
 
 \chapter{Gli algoritmi di analisi dati}\label{ch:algo}
     Una parte fondamentale del lavoro svolto è stata quella di recuperare degli algoritmi \gls{ml} e statistici sviluppati in linguaggio Java, sfruttando le librerie offerte da Spark.
@@ -503,6 +502,43 @@ L'elaborato è organizzato come segue: nel capitolo \ref{ch:tec} si espone lo st
     \section{Architettura MUSA}
 
     \section{Processo di deployment}
+        In maniera analoga a quanto fatto sul \gls{cluster} locale e su \gls{aws} \gls{eks}, l'obiettivo è quello di utilizzare lo strumento \lstinline{spark-submit} per eseguire i task Spark sul \gls{cluster} \gls{kube} implementato nell'architettura \gls{musa}.
+        Come precedentemente illustrato, per interagire con \gls{kube} si utilizza \lstinline{kubectl}. Dal momento che, come illustrato nella sezione precedente, l'autenticazione è gestita attraverso Rancher, il primo passaggio effettuato è stato quello di configurare \lstinline{kubectl} in modo tale che avesse le credenziali per accedere al \gls{cluster}. All'interno del file di configurazione, fornito direttamente da Rancher, sono riportati l'\gls{url} del servizio Rancher nel \gls{cluster}, i dati del certificato dell'autorità di certificazione per autenticare il server (nella sezione "clusters"), e il token per l'autenticazione dell'utente (nella sezione "users").
+        Una volta configurato \lstinline{kubectl}, si è avviato un application-level gateway con \lstinline{kubectl proxy} in modo tale che tutto il traffico in entrata all'indirizzo localhost sulla porta 8001 venisse inoltrato al \gls{kube} \gls{api} server remoto.
+        A questo punto si è potuto configurare \lstinline{spark-submit} per eseguire i task Spark nel \gls{cluster}: come indirizzo del master si è indicato quello del proxy (\lstinline{k8s://http://127.0.0.1:8001}), inoltre si è indicato il namespace "musa" e il Service Account "spark". Quest'ultimo serve per consentire ai processi in esecuzione all'interno dei Pod di autenticarsi presso l'\gls{api} server. In particolare, al Service Account "spark" è assegnato, tramite un ClusterRoleBinding, il ClusterRole "spark" che garantisce il permesso di fare qualsiasi operazione con le risorse pods, services, secrets, configmaps, persistentvolumeclaims.
+
+        \begin{figure}
+            \includegraphics[width=\linewidth]{images/rbac-auth.png}
+            \caption[Meccanismo per l'implementazione dell'autenticazione basata sui ruoli]{Meccanismo per l'implementazione dell'autenticazione basata sui ruoli all'interno del cluster Kubernetes MUSA}
+        \end{figure}
+
+        Di seguito si analizza l'esecuzione dell'algoritmo Linear Regression utilizzando un'immagine Docker che contiene l'uber jar del task e il dataset da utilizzare, i risultati vengono scritti nella cartella RESULT del Pod stesso.
+        \begin{lstlisting}[numbers=none]
+        spark-submit \
+        --master k8s://http://127.0.0.1:8001 \
+        --deploy-mode cluster \
+        --name lr \
+        --class it.unimi.evotion.tasks.lr.LReg \
+        --conf spark.kubernetes.container.image=gabrielestentella/spark:lramd\
+        --conf spark.kubernetes.driver.pod.name=lrsparkdriver \
+        --conf spark.kubernetes.namespace=musa \
+        --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+        --verbose \
+        local:///opt/spark/jars/lr-1.0-jar-with-dependencies.jar /opt/spark/dataset/ds_nonum.csv HA_USAGE HA_USAGE_SCALED 10 5 0.8 /opt/spark/RESULT
+
+        Events:
+          (Reason)      Message
+
+          (Scheduled)   Successfully assigned musa/lrsparkdriver to almavivaw2
+
+          (Pulled)      Container image "gabrielestentella/spark:lramd" already present on machine
+
+          (Created)     Created container spark-kubernetes-driver
+          (Started)     Started container spark-kubernetes-driver
+        \end{lstlisting}
+        {\footnotesize Nota: La sezione "Events" è stata modificata per motivi di impaginazione}
+
+        Quando viene eseguito il comando, lo scheduler \gls{kube} assegna un nodo del \gls{cluster} (almavivaw2), poi kubelet effettua il pull dell'immagine Docker se non è già presente sulla macchina, viene creato e poi avviato il container dedicato al driver. Quando comincia l'esecuzione del task sul driver, questo si occupa di richiedere che vengano istanziati gli esecutori per distribuire la computazione.
 
 \chapter{Testing e valutazione delle performance in ambiente distribuito}\label{ch:test}
     Per dimostrare l'effettiva distribuzione del carico computazionale sul \gls{cluster} si sono svolte molteplici esecuzioni degli algoritmi \gls{ml} sia sull'infrastruttura \gls{kube} locale, sia su quella sul servizio di cloud computing, misurando il tempo di esecuzione ed analizzando sia i file di log sia le informazioni riguardanti lo stato del \gls{cluster} nel corso dell'esecuzione dei task.
@@ -517,7 +553,7 @@ L'elaborato è organizzato come segue: nel capitolo \ref{ch:tec} si espone lo st
             \item una volta che tutti i task sono stati completati e i nodi executors hanno riportato il risultato allo Spark driver, il lavoro è concluso, quindi gli executors vengono terminati e il Pod dedicato allo Spark driver entra nello stato "completed" (qualora il workload preveda la scrittura dei risultati in specifici file, tale azione viene fatta dal driver).
         \end{itemize}
 
-        Dall'analisi dei file di log — di cui si riporta un estratto per quanto riguarda l'esecuzione di un algoritmo sul cluster \gls{aws} \gls{eks} nell'appendice \ref{apx:logs} — si è trovata conferma della corretta esecuzione.
+        Dall'analisi dei file di log —di cui si riporta un estratto per quanto riguarda l'esecuzione di un algoritmo sul cluster \gls{aws} \gls{eks} nell'appendice \ref{apx:logs}— si è trovata conferma della corretta esecuzione.
         Di seguito si descrive in dettaglio l'evoluzione dello stato del cluster, riportando gli indirizzi IP dei singoli Pod durante l'esecuzione del medesimo task per cui si è riportato l'estratto dei file di log.
         \begin{itemize}
             \item Appena lanciato il comando \gls{eks} StartJobRun viene creato il primo Pod che si occupa di lanciare il task vero e proprio (IP 192.168.23.130).
