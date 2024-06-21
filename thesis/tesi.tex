@@ -426,12 +426,12 @@ Il percorso che si intende illustrare in questo elaborato ha previsto sia una fa
 
 \chapter{Esecuzione in ambiente gestito con Kubernetes}\label{ch:rec}
     \section{Esecuzione su cluster locale}
-        Al fine di rendere eseguibili i task Spark in un ambiente distribuito gestito con \gls{kube}, è stato fatto un primo test di esecuzione in \gls{container} \gls{docker} dei singoli \emph{fat jar}, in modo tale da individuare un'immagine di partenza che soddisfacesse le necessità delle singole classi, inoltre, a puro scopo dimostrativo si è anche effettuata una prova di esecuzione su un cluster \gls{kube} eseguito su una sola macchina. In questa fase, sia il file archivio del task sia il dataset di lavoro sono stati aggiunti all'immagine \gls{docker} utilizzata per la costruzione dei Pod \gls{kube}, tuttavia nella configurazione finale, come verrà illustrato in seguito, il file eseguibile e i dati non sono inseriti nell'immagine, ma vengono letti da un sistema di storage distribuito. Per ottenere un'immagine \gls{docker} da usare in \gls{kube}, è stato usato lo strumento \lstinline{docker-image-tool.sh}, messo a disposizione dalla distribuzione Spark, utile per costruire e pubblicare immagini \gls{docker} in maniera immediata.
-        L'immagine di partenza è presente su Docker Hub con tag \lstinline{eclipse-temurin:8-jre}, ed è un'immagine sviluppata nell'ambito del progetto Eclipse Temurin. Si tratta di una distribuzione linux Ubuntu 22.04 su cui è stato installato OpenJDK.
+        Al fine di rendere eseguibili i task Spark in un ambiente distribuito gestito con \gls{kube}, è stato fatto un primo test di esecuzione in \gls{container} \gls{docker} dei singoli \emph{fat jar}, in modo tale da individuare un'immagine di partenza che soddisfacesse le necessità delle singole classi. Successivamente si è anche effettuata una prova di esecuzione su un cluster \gls{kube} locale, ovvero eseguito su una sola macchina. In questa fase, sia il file archivio del task sia il dataset di lavoro sono stati aggiunti all'immagine \gls{docker} utilizzata per la costruzione dei Pod \gls{kube}, tuttavia nella configurazione finale, come verrà illustrato in seguito, il file eseguibile e i dati non sono inseriti nell'immagine, ma vengono letti da un sistema di storage distribuito. Per costruire un'immagine \gls{docker} da usare in \gls{kube}, è stato usato lo strumento \lstinline{docker-image-tool.sh}, messo a disposizione dalla distribuzione Spark.
+        L'immagine di partenza è presente su Docker Hub con tag \lstinline{eclipse-temurin:8-jre}, ed è sviluppata nell'ambito del progetto Eclipse Temurin. Si tratta di una distribuzione linux Ubuntu 22.04 su cui è stato installato OpenJDK.
 
         \paragraph{Configurazione dell'ambiente di lavoro.}
-        Il \gls{cluster} locale è stato configurato su un dispositivo Apple MacBook Pro con processore Apple M1 Pro e 16 GB di memoria unificata, impostando l'applicativo Docker Desktop (utilizzato anche per la gestione del \gls{cluster} \gls{kube}) in modo tale che potesse usare fino a 8 core di \gls{cpu} e 13 GB di memoria. Da Docker Desktop è stato attivato \gls{kube}, in modo tale che venisse configurato un \gls{cluster} con un singolo nodo che contiene i Pod dedicati a: \gls{api} Server, Controller Manager, Scheduler, etcd, coredns, kube-proxy (si faccia riferimento alla sezione \ref{sec:kubernetes} per la spiegazione delle funzioni dei singoli Pod).
-        Una volta configurato il \gls{cluster}, si è utilizzato lo script \lstinline{spark-submit} per avviare l'esecuzione dei task sul \gls{cluster}; con questa procedura viene impartito il comando all'\gls{api} server che si occupa di creare un nuovo Pod che funge da Spark driver, a sua volta, il driver crea gli esecutori e si connette a tali nodi, per poi eseguire il codice dell'applicazione.
+        Il \gls{cluster} locale è stato configurato su un dispositivo Apple MacBook Pro con processore Apple M1 Pro e 16 GB di memoria unificata, impostando l'applicativo Docker Desktop (utilizzato anche per la gestione del \gls{cluster} \gls{kube}) in modo tale che potesse usare fino a 8 core di \gls{cpu} e 13 GB di memoria. Da Docker Desktop è stato attivato \gls{kube}, in modo tale che venisse configurato un \gls{cluster} con un singolo nodo che contiene i Pod dedicati a: \gls{api} Server, Controller Manager, Scheduler, storage etcd, coredns, kube-proxy (si faccia riferimento alla sezione \ref{sec:kubernetes} per la spiegazione delle funzioni dei singoli Pod).
+        Una volta configurato il \gls{cluster}, si è utilizzato lo script \lstinline{spark-submit} per avviare l'esecuzione dei task; con questa procedura viene impartito il comando all'\gls{api} server che si occupa di creare, all'interno dell'unico nodo del \gls{cluster}, un nuovo Pod che funge da Spark driver. A sua volta, il driver crea gli esecutori e si connette a tali Pod, per poi eseguire il codice dell'applicazione.
 
         \begin{figure}
             \includegraphics[width=\linewidth]{images/spark-on-kube.png}
@@ -439,15 +439,15 @@ Il percorso che si intende illustrare in questo elaborato ha previsto sia una fa
         \end{figure}
 
         \paragraph{Implementazione.}
-        Per rendere più agevole l'attività di recupero degli algoritmi, si è scelto di configurare le proprietà di Spark non attraverso le \gls{api} di Java, ma con i parametri dello strumento \lstinline{spark-submit}, in questo modo non è stato necessario modificare il codice e in più se ne favorisce il riuso, perché al variare dell'infrastruttura di deployment non serve apportare modifiche al codice, ma basta cambiare i parametri dello strumento di lancio. Di seguito si riportano le impostazioni utilizzate per il lancio sul \gls{cluster} locale:
+        Per rendere più agevole l'attività di recupero degli algoritmi, si è scelto di configurare le proprietà di Spark non attraverso le \gls{api} di Java, ma con i parametri dello strumento \lstinline{spark-submit}. In questo modo non è necessario modificare il codice e in più se ne favorisce il riuso, perché al variare dell'infrastruttura di deployment non serve apportare modifiche, ma basta cambiare i parametri dello strumento di lancio. Questo aspetto, come più volte ripreso in questo elaborato, è fondamentale per l'attività svolta in questa tesi. Di seguito si riportano le impostazioni utilizzate per il lancio sul \gls{cluster} locale:
         \begin{enumerate}
             \item \lstinline{--master} serve per indicare l'\gls{url} dello Spark master, in particolare l'indirizzo dell'\gls{api} server \gls{kube};
             \item \lstinline{--deploy-mode} definisce dove istanziare il nodo driver, in modalità \lstinline{client} è avviato localmente e quindi si interfaccia ai nodi del \gls{cluster} come nodo esterno, mentre in modalità \lstinline{cluster} viene avviato direttamente sui nodi worker;
             \item con \lstinline{--class} si specifica la classe da eseguire all'interno dell'archivio JAR;
             \item il termine indicato in \lstinline{--name} è quello utilizzato da \gls{kube} per nominare le risorse create per l'esecuzione dei task, come i driver e gli executors;
-            \item attraverso l'utilizzo di \lstinline{--conf} si possono impostare diverse proprietà per la configurazione di Spark, in particolare è utile indicare il namespace in cui avviare i Pod per eseguire il task (con \lstinline{spark.kubernetes.namespace}) e l'immagine con cui avviare i \gls{container} (con \lstinline{spark.kubernetes.container.image}), inoltre nel caso in cui sia necessaria l'autenticazione per avere il permesso di esecuzione all'interno del \gls{cluster}, si indica l'account con \lstinline{spark.kubernetes.authenticate.driver.serviceAccountName}.
+            \item attraverso l'utilizzo di \lstinline{--conf} si possono impostare diverse proprietà per la configurazione di Spark, in particolare è utile indicare il namespace in cui avviare i Pod per eseguire il task (con \lstinline{spark.kubernetes.namespace}) e l'immagine con cui avviare i \gls{container} (con \lstinline{spark.kubernetes.container.image}), inoltre nel caso in cui sia necessaria l'autenticazione per avere il permesso di esecuzione all'interno del \gls{cluster}, si indica il nome del Service Account in \gls{kube} con \lstinline{spark.kubernetes.authenticate.driver.serviceAccountName}.
         \end{enumerate}
-        Oltre ai parametri di configurazione, lo strumento richiede che venga indicato il JAR dell'applicazione da eseguire ed eventuali argomenti, nel caso dei task Spark coinvolti nel lavoro, è stato indicato il percorso interno all'immagine in cui è stato inserito l'archivio Java, il percorso del dataset e gli argomenti specifici per ciascun algoritmo.
+        Oltre ai parametri di configurazione, lo strumento richiede che venga indicato il JAR dell'applicazione da eseguire ed eventuali argomenti. Nel caso dei task Spark coinvolti nel lavoro, è stato indicato il percorso interno all'immagine in cui è stato inserito l'archivio Java, il percorso del dataset e gli argomenti specifici per ciascun modello.
 
     \section{Esecuzione su cluster AWS EKS}
         \paragraph{Configurazione dell'ambiente di lavoro.}
@@ -478,21 +478,21 @@ eksctl create cluster \
             e viene definito l'utente \lstinline{admin@test-cluster.us-east-1.eksctl.io} in modo tale che sia autenticato attraverso \lstinline{aws-iam-authenticator}.
 
             \subparagraph{Configurazione del servizio EMR.}
-            All'interno del \gls{cluster} si è creato un namespace dedicato all'esecuzione dei task, poi una mappatura (\emph{iamidentitymapping}) fra uno specifico utente \gls{kube} e il ruolo dedicato all'amministrazione dei \gls{container}. In questo modo \gls{emr} ha accesso al namespace \gls{kube} in cui devono essere creati i Pod per l'esecuzione dei task. Tutte le operazioni di configurazione sono gestite in automatico da \lstinline{eksctl}, attraverso il comando \lstinline{create iamidentitymapping}.
+            All'interno del \gls{cluster} si è creato un namespace dedicato all'esecuzione dei task (denominato \lstinline{task-namespace}), poi una mappatura (\emph{iamidentitymapping}) fra uno specifico utente \gls{kube} e il ruolo dedicato all'amministrazione dei \gls{container}. In questo modo \gls{emr} ha accesso al namespace in cui devono essere creati i Pod per l'esecuzione dei task. Tutte le operazioni di configurazione sono gestite in automatico da \lstinline{eksctl}, attraverso il comando \lstinline{create iamidentitymapping}.
 
             \subparagraph{Abilitazione di IAM Roles for Service Accounts.}
-            Per rendere possibile associare direttamente ruoli \gls{iam} ai servizi all'interno del cluster, consentendo loro di accedere alle risorse \gls{aws} senza la necessità di utilizzare credenziali statiche all'interno dei \gls{container}, si deve creare un Identity Provider per il \gls{cluster}. La creazione del provider, compatibile con protocollo di autenticazione OpenID Connect avviene attraverso il comando \lstinline{eksctl utils associate-iam-oidc-provider --cluster test-cluster --approve}. In questo modo i pod all'interno del cluster possono assumere ruoli \gls{iam} specifici per accedere alle risorse \gls{aws} in modo sicuro e controllato.
+            Per rendere possibile associare direttamente ruoli \gls{iam} ai servizi all'interno del cluster, consentendo loro di accedere alle risorse \gls{aws} senza la necessità di utilizzare credenziali statiche all'interno dei \gls{container}, si deve creare un Identity Provider per il \gls{cluster}. La creazione del provider, compatibile con protocollo di autenticazione OpenID Connect, avviene attraverso il comando \lstinline{eksctl utils associate-iam-oidc-provider --cluster test-cluster --approve}. In questo modo i Pod all'interno del cluster possono assumere ruoli \gls{iam} specifici per accedere alle risorse \gls{aws} in modo sicuro e controllato.
 
             \subparagraph{Configurazione del \emph{job execution role}.}
             È stato creato un ruolo \gls{iam} per l'esecuzione dei task e vi è stata associata una policy che consentisse l'accesso completo ad uno specifico bucket \gls{s3} e al servizio di monitoraggio Amazon CloudWatch.
-            Si è poi aggiornata la trust policy in modo tale che l'utente \emph{admin} potesse assumere il ruolo appena creato.
+            Si è poi aggiornata la trust policy del \gls{cluster} in modo tale che l'utente \emph{admin} potesse assumere il ruolo appena creato.
             \begin{lstlisting}[numbers=none]
 aws emr-containers update-role-trust-policy \
 --cluster-name test-cluster \
 --namespace task-namespace \
 --role-name EMRContainers-JobExecutionRole
             \end{lstlisting}
-            Un ulteriore permesso necessario per l'esecuzione di task sul \gls{cluster} \gls{eks} è quello di amministrazione dei \gls{cluster} virtuali e  lancio di "job" software. Si è dunque creata una policy (AmazonEMROnEKSPolicy) contenente tali permessi e la si è associata all'utente \emph{admin} con il comando (\lstinline{[ID]} sostituisce il reale ID del \gls{cluster})
+            Un ulteriore permesso necessario per l'esecuzione di task sul \gls{cluster} \gls{eks} è quello di amministrazione dei \gls{cluster} virtuali e lancio di "job" software. Si è dunque creata una policy (AmazonEMROnEKSPolicy) contenente tali permessi e la si è associata all'utente \emph{admin} con il comando (\lstinline{[ID]} sostituisce il reale ID del \gls{cluster})
             \begin{lstlisting}[numbers=none]
 aws iam attach-user-policy \
 --user-name admin \
@@ -501,7 +501,7 @@ aws iam attach-user-policy \
             Si faccia riferimento all'appendice \ref{apx:policy} per il contenuto delle policy citate.
 
             \subparagraph{Creazione del cluster virtuale.}
-            Infine è stato creato un \gls{cluster} virtuale per l'esecuzione vera e propria dei task, indicando come provider dei \gls{container} il \gls{cluster} fisico appena configurato.
+            Infine è stato creato un \gls{cluster} virtuale per l'esecuzione vera e propria dei task, indicando come provider dei \gls{container} il \gls{cluster} fisico appena configurato, in particolare il namespace creato precedentemente.
             \begin{lstlisting}[numbers=none]
 aws emr-containers create-virtual-cluster \
 --name tasks-virtual \
@@ -529,7 +529,7 @@ kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount
 kubectl run -it testcontainer --image=755674844232.dkr.ecr.us-
 east-1.amazonaws.com/spark/emr-7.0.0:latest --command -n task-namespace /bin/bash
             \end{lstlisting}
-            Da bash in esecuzione nel \gls{container}, si esegue il comando per l'avvio del task (in questo caso il semplice esempio già presente nell'immagine Spark)
+            Dal processo bash in esecuzione nel \gls{container}, si esegue il comando per l'avvio del task (in questo caso il semplice esempio già presente nell'immagine Spark)
             \begin{lstlisting}[numbers=none]
 $SPARK_HOME/bin/spark-submit \
 --class org.apache.spark.examples.JavaSparkPi \
@@ -540,7 +540,7 @@ $SPARK_HOME/bin/spark-submit \
 --conf spark.kubernetes.namespace=task-namespace \
 local:///usr/lib/spark/examples/jars/spark-examples.jar 20
             \end{lstlisting}
-            dove \lstinline{MASTER_URL} è l'indirizzo del Control Plane del \gls{cluster} \gls{eks} preceduto da \lstinline{k8s://}. È da notare che si utilizza il Service Account precedentemente creato per l'autenticazione.
+            dove \lstinline{MASTER_URL} è la variabile d'ambiente in cui è memorizzato l'indirizzo del Control Plane del \gls{cluster} \gls{eks} preceduto da \lstinline{k8s://}. È da notare che si utilizza il Service Account precedentemente creato per l'autenticazione.
 
             \subparagraph{Esecuzione con StartJobRun.}
             Nell'appendice \ref{apx:startjob} si può vedere l'esempio del file JSON per la configurazione dello strumento. La configurazione mostrata è per l'esecuzione del task che implementa l'algoritmo kmeans: a differenza dell'esecuzione su cluster locale, l'archivio JAR e il dataset passati al tool di esecuzione, così come il percorso in cui scrivere i risultati dell'algoritmo, non sono locali all'immagine eseguita dal \gls{container} nel \gls{cluster}, ma sono percorsi in un bucket \gls{s3}. La comunicazione fra lo Spark driver e il bucket S3 avviene attraverso \gls{emrfs}, un'implementazione di \gls{hdfs} usata per leggere e scrivere file dai cluster \gls{emr} a S3 \cite{emrfs:2024}. In aggiunta ai parametri di \lstinline{spark-submit}, nel file di configurazione vanno indicati l'identificativo del \gls{cluster} virtuale, l'\gls{arn} del Job Execution Role, la versione di \gls{emr} da utilizzare, le risorse hardware da assegnare allo Spark driver e la configurazione di CloudWatch.
@@ -552,7 +552,7 @@ local:///usr/lib/spark/examples/jars/spark-examples.jar 20
 
 \chapter{Studio e implementazione di un algoritmo di test in Tensorflow}\label{ch:impl}
     Parallelamente all'attività di recupero degli algoritmi Spark, si è voluta studiare la possibilità di utilizzare lo stesso ambiente distribuito con \gls{kube} per eseguire task \gls{dl}.
-    Come illustrato nella sezione \ref{sec:ai}, la libreria Tensorflow è estremamente utilizzata in molti ambiti del machine learning, grazie alla sua semplicità d'uso e alla possibilità di ottimizzare l'esecuzione su hardware specifico. Si è studiata, dunque, l'implementazione di nuovi algoritmi sfruttando la libreria in questione, superando l'approccio con Java, pur mantenendo la possibilità di esecuzione su \gls{cluster} precedentemente configurato. Per farlo, è stata utilizzato un popolare modello \gls{dl} che implementa una rete neurale convoluzionale per riuscire a classificare le immagini di cifre scritte a mano, di fatto riconoscendo la cifra presente nell'immagine. Il dataset \cite{lecun:1994} utilizzato per la costruzione del modello è composto da 60000 esempi dedicati al training e 10000 dedicati al testing; è presente direttamente in Tensorflow (\lstinline{tf.keras.datasets.mnist}).
+    Come illustrato nella sezione \ref{sec:ai}, la libreria Tensorflow è estremamente utilizzata in molti ambiti del machine learning, grazie alla sua semplicità d'uso e alla possibilità di ottimizzare l'esecuzione su hardware specifico. Si è studiata, dunque, l'implementazione di nuovi algoritmi sfruttando la libreria in questione, superando l'approccio con Java, pur mantenendo la possibilità di esecuzione sul \gls{cluster} precedentemente configurato. Per farlo, è stato utilizzato un popolare modello \gls{dl} che implementa una rete neurale convoluzionale per riuscire a classificare le immagini di cifre scritte a mano, di fatto riconoscendo la cifra presente nell'immagine. Il dataset \cite{lecun:1994} utilizzato per la costruzione del modello è composto da 60000 esempi dedicati al training e 10000 dedicati al testing; è presente direttamente in Tensorflow (\lstinline{tf.keras.datasets.mnist}).
 
     \section{Analisi}
         Tensorflow ha la sua \gls{api} —\lstinline{tf.distribute}— che permette la distribuzione sia della computazione da parte di modelli predittivi già allenati, sia del training; è pensata per funzionare sia con il codice che utilizza \gls{api} fornite da librerie di alto livello, come \lstinline{Model.fit} di Keras, sia con programmi che usano Tensorflow più a basso livello, come quelli con \emph{training step} personalizzati \cite{tfdis:2024}.
