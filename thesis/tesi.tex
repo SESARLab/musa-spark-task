@@ -135,7 +135,7 @@
     \vspace{.5cm}
     \textit{\textsf{Corso di Laurea in Sicurezza dei Sistemi e delle Reti Informatiche}} \\
     \vspace{1cm}
-    {\huge Recupero e implementazione di componenti ML per analisi dati in un contesto distribuito} \\
+    {\huge Refactoring e implementazione di servizi di Machine Learning per l'analisi dati in un contesto distribuito basato su Kubernetes} \\
     \vspace{2cm}
     \begin{flushleft}
         \textbf{Relatore} \\
@@ -144,15 +144,14 @@
         \textbf{Correlatori} \\
         Prof. Marco Anisetti \\
         Dott. Antongiacomo Polimeno \\
-        \vspace{1.5cm}
+        \vspace{1cm}
     \end{flushleft}
     \begin{flushright}
         \textit{Tesi di laurea di} \\
-        \vspace{.25cm}
+        \vspace{.2cm}
         Gabriele Stentella \\
         {\small 984491} \\
     \end{flushright}
-    \vspace{.5cm}
     Anno Accademico 2023/2024 \\
 \end{center}
 
@@ -165,11 +164,11 @@ A partire dai primi anni 2000 si sono sviluppate numerose tecnologie per l'elabo
 Fra il 2003 e il 2008, Google divulgò tre componenti fondamentali sviluppati per affrontare la sfida di indicizzare internet: la tecnologia del proprio \gls{fs} \cite{ghemawat:2003}, il modello \gls{mapreduce} \cite{dean:2008} e il sistema di archiviazione dati distribuito \gls{bigtable} \cite{chang:2008}. Tali tecnologie gettarono le basi per lo sviluppo del framework \emph{Hadoop}, uno strumento \textit{open source} che ha consentito una larga adozione di tecniche per la computazione distribuita. Negli anni successivi, si diffuse l'utilizzo di \emph{Hadoop} e si sviluppò un ecosistema con tale tecnologia al centro, con \gls{fs} distribuiti e framework per convertire le classiche interrogazioni \emph{\glsentryshort{sql}} in lavori \gls{mapreduce}. Dal momento che avviare e gestire un \gls{cluster} \emph{Hadoop} era un'operazione costosa e impegnativa, la vera adozione di massa avvenne quando Amazon lanciò il suo servizio di cloud computing \textit{on-demand} e contestualmente \emph{\gls{emr}}, consentendo di sfruttare i vantaggi del modello \gls{mapreduce} impiegando il \gls{fs} distribuito \emph{\gls{s3}} senza dover acquistare e configurare l'hardware necessario.
 
 Alcuni anni dopo vennero rilasciate le prime versioni di \emph{Apache Spark}, un nuovo framework con una sintassi più semplice e migliori performance di \gls{mapreduce}, grazie alla sua capacità di utilizzare la \glsentryshort{ram} come cache. La gestione delle risorse del cluster era gestita attraverso il resource manager \emph{\gls{yarn}}.
-Poco dopo \emph{Spark} cominciò ad avere successo anche nel mondo del \gls{ml}, grazie al framework \emph{Apache Mahout} prima, e poi alla \emph{\gls{mllib}}, più veloce. Le possibilità offerte da \emph{Spark} si ampliarono grazie alla nascita di \gls{sched} come \emph{\gls{airflow}} e \emph{\gls{luigi}}.
+Poco dopo, Spark cominciò ad avere successo anche nel mondo del \gls{ml}, grazie al framework \emph{Apache Mahout} prima, e poi alla \emph{\gls{mllib}}, più veloce. Le possibilità offerte da Spark si ampliarono grazie alla nascita di \gls{sched} come \emph{\gls{airflow}} e \emph{\gls{luigi}}.
 
 Fra il 2013 e il 2014 si diffusero \emph{\gls{docker}} e l'orchestratore \emph{\gls{kube}} che semplificarono la gestione di \gls{cluster} anche di grandi dimensioni, rendendo le architetture molto più stabili e scalabili. \emph{Spark} si è adattato al contesto, permettendo di utilizzare proprio \emph{\gls{kube}} come resource manager.
 
-Con l'avvento del \gls{dl} le attività di computazione si sono spostate sull'utilizzo massiccio di \glsentryshort{gpu} e sull'impiego delle più importanti librerie di \emph{Python} dedicate, \emph{Tensorflow} e \emph{Pytorch}, dunque per questi carichi di lavoro si è passati all'utilizzo delle \gls{api} proprietarie delle librerie per distribuire la computazione anziché usare \emph{Spark}, in modo da usare in maniera efficiente l'hardware.
+Con l'avvento del \gls{dl} le attività di computazione si sono spostate sull'utilizzo massiccio di \glsentryshort{gpu} e sull'impiego delle più importanti librerie di \emph{Python} dedicate, \emph{Tensorflow} e \emph{Pytorch}. Per questi carichi di lavoro si è passati all'utilizzo delle \gls{api} proprietarie delle librerie per distribuire la computazione anziché usare Spark, in modo da sfruttare in maniera efficiente l'hardware.
 
 Questa tesi si propone di esaminare come eseguire algoritmi che utilizzano tecnologie diverse —ossia Spark e Tensorflow— distribuendo la computazione su un'unica infrastruttura. Con l'approccio illustrato nell'elaborato, il codice degli algoritmi è disaccoppiato dal \gls{cluster} di esecuzione, dunque si possono riutilizzare i modelli su diverse infrastrutture.
 
