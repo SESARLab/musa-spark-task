@@ -645,7 +645,7 @@ spark-submit \
 --deploy-mode cluster \
 --name lr \
 --class it.unimi.evotion.tasks.lr.LReg \
---conf spark.kubernetes.container.image=gabrielestentella/spark:lramd\
+--conf spark.kubernetes.container.image=gabrielestentella/spark:lramd \
 --conf spark.kubernetes.driver.pod.name=lrsparkdriver \
 --conf spark.kubernetes.namespace=musa \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
@@ -970,8 +970,7 @@ Policy per l'amministrazione dei cluster virtuali e il lancio dei Job:
             "entryPointArguments": ["s3://test-tasks-stentella/dataset.csv", "5",
             "s3://test-tasks-stentella/result"],
             "sparkSubmitParameters": "\
-            --master k8s://https://E5F648AFE82BAF20017B44F112918FBE.gr7.us-east-1 \
-            .eks.amazonaws.com \
+            --master k8s://https://E5F648AFE82BAF20017B44F112918FBE.gr7.us-east-1.eks.amazonaws.com \
             --class it.unimi.evotion.tasks.kmeans.Kmeans \
             --conf spark.kubernetes.container.image= \
             755674844232.dkr.ecr.us-east-1.amazonaws.com/spark/emr-7.0.0:latest \
