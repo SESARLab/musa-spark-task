@@ -15,5 +15,81 @@
 	- L'analisi dei logs e dello stato del cluster in un deployment del task kmeans su cluster Kubernetes locale evidenzia il comportamento atteso.
 - Training distribuito su cluster kubernetes del modello TensorFlow.
 
+---
+
+## Create the `VectorAssembler` dependency jar
+
+Git clone [this repo](https://github.com/jamesbconner/VectorDisassembler/tree/master) and replace the POM with the following one:  
+  
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.apache.spark.ml.feature</groupId>
+    <artifactId>VectorDisassembler</artifactId>
+    <version>0.1</version>
+
+    <properties>
+        <spark_version>3.5.3</spark_version>
+        <scala_version>2.12</scala_version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala_version}</artifactId>
+            <version>${spark_version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala_version}</artifactId>
+            <version>${spark_version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala_version}</artifactId>
+            <version>${spark_version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>4.9.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+Then run `mvn package` to create the `VectorDisassembler-0.1.jar` file. You can find this jar in `./code` folder. Finally, install the dependency into the local maven repository:
+
+```bash
+mvn install:install-file -Dfile=/path/to/VectorDisassembler-0.1.jar \
+                         -DgroupId=org.apache.spark.ml.feature \
+                         -DartifactId=VectorDisassembler \
+                         -Dversion=1.0 \
+                         -Dpackaging=jar
+```
+
 ## Author
 Gabriele Stentella
