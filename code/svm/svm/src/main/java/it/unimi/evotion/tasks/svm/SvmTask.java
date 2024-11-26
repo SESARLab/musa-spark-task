@@ -59,8 +59,9 @@ public class SvmTask implements Task {
      *
      * @param args
      *             args[0] url_csv input dataset (in CSV with header format)
-     *             args[1] vector variables
-     *             args[2] label variable
+     *             args[1] feature column names
+     *             args[2] label column name (do not use 'label' because it is used
+     *             by the task)
      *             args[3] number of maximum iterations
      *             args[4] regression parameter
      *             args[5] url_json|url_csv result of SVM information

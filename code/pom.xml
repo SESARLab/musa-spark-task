@@ -10,5 +10,6 @@
     <modules>
         <module>svm</module>
         <module>lr</module>
+        <module>kmeans</module>
     </modules>
 </project>
