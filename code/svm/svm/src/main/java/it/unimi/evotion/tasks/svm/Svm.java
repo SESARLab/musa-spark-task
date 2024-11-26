@@ -1,7 +1,8 @@
 package it.unimi.evotion.tasks.svm;
-public class svm {
+
+public class Svm {
     public static void main(String[] args) throws Exception {
-        svmTask task = new svmTask();
+        SvmTask task = new SvmTask();
         task.init(args);
         task.run();
         task.postProcessing();

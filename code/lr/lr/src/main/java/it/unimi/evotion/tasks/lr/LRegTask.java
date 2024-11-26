@@ -13,6 +13,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -152,25 +153,25 @@ public class LRegTask implements Task {
                 .format("csv")
                 // .mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .save(resultPath + "-summary");
+                .save(resultPath + "/summary");
 
         this.dfResult2.coalesce(1).write()
                 .format("csv")
                 // .mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .save(resultPath + "-residuals");
+                .save(resultPath + "/residuals");
 
         this.dfResult3.coalesce(1).write()
                 .format("csv")
                 // .mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .save(resultPath + "-objective-history");
+                .save(resultPath + "/objective-history");
 
         this.dfResult4.coalesce(1).write()
                 .format("csv")
                 // .mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .save(resultPath + "-coefficients");
+                .save(resultPath + "/coefficients");
 
         this.logger.info(this.debugString);
 

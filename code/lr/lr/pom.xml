@@ -11,7 +11,6 @@
     </parent>
 
     <artifactId>lr</artifactId>
-    <name>LReg</name>
     <version>1.0</version>
 
     <properties>

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import static org.apache.spark.sql.functions.*;
 import static org.apache.spark.sql.functions.regexp_replace;
 
-public class svmTask implements Task {
+public class SvmTask implements Task {
 
     // ----------------------------------------------------------------------
     // Private fields
@@ -33,12 +33,12 @@ public class svmTask implements Task {
     private String csvData;
     private String labelName;
     private String label;
-    private int    labelIndex;
+    private int labelIndex;
     private String resultPath;
     private String maxIter;
     private String regParam;
     private List<String> lcn = new ArrayList<>();
-    private Dataset<Row> df;    // input dataframe
+    private Dataset<Row> df; // input dataframe
     private Dataset<Row> df2;
     private Dataset<Row> df3;
     private Dataset<Row> dfa;
@@ -58,18 +58,18 @@ public class svmTask implements Task {
      * for regressione, otherwise (int) for classification
      *
      * @param args
-     *      args[0] url_csv input dataset (in CSV with header format)
-     *      args[1] vector variables
-     *      args[2] label variable
-     *      args[3] number of maximum iterations
-     *      args[4] regression parameter
-     *      args[5] url_json|url_csv result of SVM information
+     *             args[0] url_csv input dataset (in CSV with header format)
+     *             args[1] vector variables
+     *             args[2] label variable
+     *             args[3] number of maximum iterations
+     *             args[4] regression parameter
+     *             args[5] url_json|url_csv result of SVM information
      * @throws Exception
      */
     @Override
     public void init(Object... args) throws Exception {
 
-        this.logger = LogManager.getLogger(svmTask.class);
+        this.logger = LogManager.getLogger(SvmTask.class);
 
         if (args.length < 6)
             throw new InvalidParameterException("Missing parameters.");
@@ -85,12 +85,11 @@ public class svmTask implements Task {
         try {
             this.spark = SparkSession
                     .builder()
-                    //.master("local[2]")
+                    // .master("local[2]")
                     // .master("yarn")
                     .appName("LinReg")
                     .getOrCreate();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             this.spark = SparkSession
                     .builder()
                     .master("local[2]")
@@ -122,47 +121,45 @@ public class svmTask implements Task {
                 .setInputCol(String.valueOf(df.col(this.label)))
                 .setOutputCol("label");
         Dataset<Row> dfi = indexer.fit(df).transform(df);
-      //  dfi.show();
+        // dfi.show();
 
         df2 = dfi;
-        for(String c : df2.columns()) {
+        for (String c : df2.columns()) {
             df2 = df2.withColumnRenamed(c, c.replaceAll("'", ""));
         }
         df2.createOrReplaceTempView("dft");
         df3 = spark.sql(String.format("SELECT %s, label FROM dft", processedLabelNames));
 
-
         this.lcn = Arrays.stream(processedLabelNames.split(",")).collect(Collectors.toList());
         String[] names = this.lcn.stream().toArray(String[]::new);
-
 
         VectorAssembler assembler1 = new VectorAssembler()
                 .setInputCols(names)
                 .setOutputCol("features");
 
         dfa = assembler1.transform(df3);
-       // dfa.show();
+        // dfa.show();
 
-// Fit the model
+        // Fit the model
         LinearSVCModel lsvcModel = lsvc.fit(dfa);
 
-// Print the coefficients and intercept for LinearSVC
+        // Print the coefficients and intercept for LinearSVC
 
         double[] coef = lsvcModel.coefficients().toArray();
         List<Row> co = new ArrayList<>();
-        for (double v1: coef){
+        for (double v1 : coef) {
             co.add(RowFactory.create(v1));
         }
 
         List<Row> row = Arrays.asList(
                 RowFactory.create(lsvcModel.intercept()));
 
-        StructType sch = new StructType(new StructField[]{
-                new StructField("Coefficients", DataTypes.DoubleType, true, Metadata.empty())});
+        StructType sch = new StructType(new StructField[] {
+                new StructField("Coefficients", DataTypes.DoubleType, true, Metadata.empty()) });
         dfResult = spark.createDataFrame(co, sch);
 
-        StructType sch2 = new StructType(new StructField[]{
-                new StructField("Intercept", DataTypes.DoubleType, true, Metadata.empty())});
+        StructType sch2 = new StructType(new StructField[] {
+                new StructField("Intercept", DataTypes.DoubleType, true, Metadata.empty()) });
         dfResult2 = spark.createDataFrame(row, sch2);
 
     }
@@ -170,13 +167,13 @@ public class svmTask implements Task {
     private void convertFeatures() {
         List<String> stringFeatures = new ArrayList<>();
 
-        for(StructField field : this.df.schema().fields()) {
+        for (StructField field : this.df.schema().fields()) {
             if (field.dataType().equals(DataTypes.StringType))
                 stringFeatures.add(field.name());
         }
 
-        for(String sf : stringFeatures) {
-            String rn = "str-"+sf;
+        for (String sf : stringFeatures) {
+            String rn = "str-" + sf;
             this.df = this.df.withColumnRenamed(sf, rn);
             StringIndexer encoder = new StringIndexer()
                     .setInputCol(rn)
@@ -187,7 +184,7 @@ public class svmTask implements Task {
         }
 
         this.df.printSchema();
-        //this.df.show();
+        // this.df.show();
     }
 
     @Override
@@ -195,15 +192,15 @@ public class svmTask implements Task {
 
         this.dfResult.coalesce(1).write()
                 .format("csv")
-                .mode(SaveMode.Overwrite)
+                // .mode(SaveMode.Overwrite)
                 .option("header", "true")
-                .save(resultPath);
+                .save(resultPath + "/coefficients");
 
         this.dfResult2.coalesce(1).write()
                 .format("csv")
-                .mode(SaveMode.Append)
+                // .mode(SaveMode.Append)
                 .option("header", "true")
-                .save(resultPath);
+                .save(resultPath + "/intercept");
 
         this.logger.info(this.debugString);
         this.spark.stop();
