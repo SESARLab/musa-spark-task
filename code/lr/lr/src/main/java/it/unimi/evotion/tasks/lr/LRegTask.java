@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import it.unimi.evotion.tasks.utils.CommonUtils;
+
 public class LRegTask implements Task {
 
     // ----------------------------------------------------------------------
@@ -48,7 +50,6 @@ public class LRegTask implements Task {
     private Dataset<Row> dfResult4;
 
     private Vector featureImportances;
-    private String debugString;
 
     // ----------------------------------------------------------------------
     // Interface implementation
@@ -173,8 +174,7 @@ public class LRegTask implements Task {
                 .option("header", "true")
                 .save(resultPath + "/coefficients");
 
-        this.logger.info(this.debugString);
-
+        CommonUtils.sleepIfSystemPropIsSet();
         this.spark.stop();
         this.spark.close();
     }

@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 
 import static org.apache.spark.sql.functions.*;
 
+import it.unimi.evotion.tasks.utils.CommonUtils;;
+
 public class kMeansTask implements Task {
 
     // ----------------------------------------------------------------------
@@ -48,7 +50,6 @@ public class kMeansTask implements Task {
     // private Dataset<Row> dfResult3;
 
     private Vector featureImportances;
-    private String debugString;
 
     // ----------------------------------------------------------------------
     // Interface implementation
@@ -217,7 +218,7 @@ public class kMeansTask implements Task {
                 .option("header", "true")
                 .save(resultPath + "/cluster-centers");
 
-        this.logger.info(this.debugString);
+        CommonUtils.sleepIfSystemPropIsSet();
         this.spark.stop();
         this.spark.close();
     }

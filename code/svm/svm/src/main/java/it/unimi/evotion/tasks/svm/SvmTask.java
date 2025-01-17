@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import it.unimi.spark.utils.CommonUtils;
+
 import static org.apache.spark.sql.functions.*;
 import static org.apache.spark.sql.functions.regexp_replace;
 
@@ -46,7 +48,6 @@ public class SvmTask implements Task {
     private Dataset<Row> dfResult2;
 
     private Vector featureImportances;
-    private String debugString;
 
     // ----------------------------------------------------------------------
     // Interface implementation
@@ -203,7 +204,7 @@ public class SvmTask implements Task {
                 .option("header", "true")
                 .save(resultPath + "/intercept");
 
-        this.logger.info(this.debugString);
+        CommonUtils.sleepIfSystemPropIsSet();
         this.spark.stop();
         this.spark.close();
     }
