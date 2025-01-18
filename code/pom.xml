@@ -95,6 +95,7 @@
             </activation>
             <modules>
                 <module>lr</module>
+                <module>example</module>
                 <module>kmeans</module>
                 <module>svm</module>
                 <module>extra-jars</module>
@@ -105,6 +106,7 @@
             <id>tasks</id>
             <modules>
                 <module>lr</module>
+                <module>example</module>
                 <module>kmeans</module>
                 <module>svm</module>
                 <module>utils</module>
