@@ -2,8 +2,8 @@ package it.unimi.evotion.tasks.utils;
 
 import java.util.Optional;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CommonUtils {
     private static final Logger logger = LogManager.getLogger(CommonUtils.class);

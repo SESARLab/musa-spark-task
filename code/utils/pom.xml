@@ -9,6 +9,7 @@
         <artifactId>ml-tasks</artifactId>
         <version>1.0</version>
     </parent>
+    <groupId>it.unimi.evotion.tasks</groupId>
     <artifactId>utils</artifactId>
     <version>1.0.0</version>
 
