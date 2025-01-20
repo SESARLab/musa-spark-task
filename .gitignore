@@ -1,5 +1,6 @@
 **/.DS_Store
 **/*.csv
+!datasets/*.csv
 **/*.aux
 **/*.log
 
