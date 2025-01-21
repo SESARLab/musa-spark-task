@@ -3,8 +3,13 @@ package it.unimi;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.*;
 import static org.apache.spark.sql.functions.avg;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Metadata;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
+
+import it.unimi.evotion.tasks.utils.CommonUtils;
 
 /**
  * Hello world!
@@ -17,7 +22,7 @@ public class SparkSample {
      *             - Input file path: a CSV file with header (id,name,age)
      *             - Output file path: a generic text file
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.out.println("args[0]: " + args[0]);
         System.out.println("args[1]: " + args[1]);
 
@@ -45,5 +50,7 @@ public class SparkSample {
         System.out.println("Objects count: " + outDf.count());
 
         outDf.write().text(args[1]);
+
+        CommonUtils.sleepIfSystemPropIsSet();
     }
 }
