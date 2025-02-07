@@ -9,6 +9,9 @@ USER root
 RUN <<EOF
     apt update
     apt install -y python3.8-venv
+
+    mkdir -p /home/spark
+    chown -R spark:spark /home/spark
 EOF
 
 USER spark
