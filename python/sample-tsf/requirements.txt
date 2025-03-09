@@ -1,4 +1,4 @@
-absl-py==2.1.0
+absl-py==1.4.0
 array-record==0.4.0
 astunparse==1.6.3
 cachetools==5.5.1
@@ -27,7 +27,7 @@ oauthlib==3.2.2
 opt-einsum==3.4.0
 packaging==24.2
 promise==2.3
-protobuf==4.25.6
+protobuf==3.20.3
 psutil==6.1.1
 pyasn1==0.6.1
 pyasn1-modules==0.4.1
@@ -42,7 +42,7 @@ tensorflow-datasets==4.9.2
 tensorflow-estimator==2.13.0
 tensorflow-io-gcs-filesystem==0.34.0
 tensorflow-metadata==1.14.0
-tensorflowonspark==2.2.5
+# tensorflowonspark==2.2.5
 termcolor==2.4.0
 toml==0.10.2
 tqdm==4.67.1

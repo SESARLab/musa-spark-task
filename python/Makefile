@@ -37,3 +37,28 @@ run:
 
 shell:
 	$$SPARK_HOME/bin/pyspark --archives output/sample-tsf.tar.gz#venv
+
+
+create-conda-archive:
+	wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+	bash Miniconda3-latest-Linux-x86_64.sh -b -p $$HOME/miniconda
+	source ~/miniconda/bin/activate
+	conda init --all
+	conda deactivate
+	source ~/miniconda/bin/activate
+	rm Miniconda3-latest-Linux-x86_64.sh
+
+	conda create -y --prefix ./conda_env python=3.8.10
+	conda activate /opt/spark/work-dir/conda_env
+	pip install -r requirements.txt
+	pip install conda-pack
+	conda pack -f -o sample-tsf.tar.gz
+
+create-pex:
+	python3 -m venv venv
+	source venv/bin/activate
+	pip install pex
+	pex -r requirements.txt -o sample-tsf.pex
+	export PYSPARK_DRIVER_PYTHON=python3
+	export PYSPARK_PYTHON=/opt/spark/work-dir/sample-tsf.pex
+	$SPARK_HOME/bin/pyspark --conf "spark.executorEnv.PEX_ROOT=./.pex" --conf "spark.yarn.dist.files=./sample-tsf.pex" --conf "spark.files=./sample-tsf.pex"
