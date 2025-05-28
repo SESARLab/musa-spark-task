@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import it.unimi.evotion.tasks.utils.CommonUtils;
+
 
 public class AnovaTask implements Task {
 
@@ -146,33 +148,30 @@ public class AnovaTask implements Task {
 
     @Override
     public void postProcessing(Object... params) throws Exception {
-        /*
-        if (parameters.get("resultPath").endsWith(".json")) {
-            ObjectMapper jser = new ObjectMapper();
-            jser.enable(SerializationFeature.INDENT_OUTPUT);
-            jser.writeValue(new File(parameters.get("resultPath")), result);
-        }
-        */
+        String outputFormat = parameters.getOrDefault("outputFormat", "parquet");
 
-        // if (parameters.get("resultPath").endsWith(".csv")) {
-            convertResult();
-            df1Map = dfResult.select(functions.concat(dfResult.col("category"), functions.lit("_"), dfResult.col("name")).as("Paramnames"), dfResult.col("value").as("Values"));
-            this.df1Map
-                    //.coalesce(1)
-                    .write()
-                    .format("parquet")
-                    //.format("csv")
-                    .mode(SaveMode.Overwrite)
-                    .option("header", "true")
-                    .save(parameters.get("resultPath"));
-       // }
-        /*
-        this.dfResult.write()
-                .format("csv")
-                .mode(SaveMode.Overwrite)
+        // 1. summary → contiene i risultati principali dell'anova (fRatio, pValue, etc.)
+        this.dfResult.coalesce(1).write()
+                .format(outputFormat)
                 .option("header", "true")
-                .save(parameters.get("resultPath"));
-        */
+                .save(resultPath + "/summary");
+
+        // 2. cell-means → già pronto in df1Map, se lo vuoi distinguere
+        if (this.df1Map != null) {
+            this.df1Map.coalesce(1).write()
+                    .format(outputFormat)
+                    .option("header", "true")
+                    .save(resultPath + "/cell-means");
+        }
+
+        // 3. eventuali placeholder vuoti (coerenza tra task)
+        Dataset<Row> emptyDf = spark.emptyDataFrame();
+        emptyDf.coalesce(1).write()
+                .format(outputFormat)
+                .option("header", "true")
+                .save(resultPath + "/residuals"); 
+
+        CommonUtils.sleepIfSystemPropIsSet();
         this.spark.stop();
         this.spark.close();
 
