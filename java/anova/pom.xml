@@ -17,8 +17,6 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!--TODO spark version da rimuovere DA RIMUOVERE? -->
-        <!-- <spark.version>3.5.0</spark.version> -->
         <scala.version>2.12</scala.version>
     </properties>
 
@@ -82,6 +80,11 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming_${scala.version}</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>it.unimi.evotion.tasks</groupId>
+            <artifactId>utils</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 </project>

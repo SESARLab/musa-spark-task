@@ -150,6 +150,8 @@ public class AnovaTask implements Task {
     public void postProcessing(Object... params) throws Exception {
         String outputFormat = parameters.getOrDefault("outputFormat", "parquet");
 
+        String resultPath = parameters.get("resultPath");
+
         // 1. summary → contiene i risultati principali dell'anova (fRatio, pValue, etc.)
         this.dfResult.coalesce(1).write()
                 .format(outputFormat)

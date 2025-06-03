@@ -3,4 +3,4 @@
     jarpath/ \
     csvData=datasetpath.csv \
     labelName=Score \
-    resultPath
+    resultPath=path
