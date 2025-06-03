@@ -1,0 +1,7 @@
+task: anova
+mainClass: it.unimi.evotion.tasks.Anova
+jarPath: /path/to/ml-tasks.jar
+params:
+  csvData: /data/datasetpath.csv
+  labelName: Score
+  resultPath: /output/anova/
