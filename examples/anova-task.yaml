@@ -5,3 +5,7 @@ params:
   csvData: /data/datasetpath.csv
   labelName: Score
   resultPath: /output/anova/
+
+# USAGE EXAMPLE
+# chmod +x run-task.sh
+# ./run-task.sh anova-task.yaml

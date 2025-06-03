@@ -1,0 +1,19 @@
+task: bubblechart
+mainClass: it.unimi.evotion.tasks.bubblechart.bcTask
+jarPath: /path/to/ml-tasks.jar
+params:
+  csvData: /data/sample_data.csv
+  col1: x
+  col2: y
+  mag: size
+  title: "Esempio Grafico a Bolle"
+  sname: SerieDemo
+  fileName: bubblechart.png
+  folderName: /user/bda/graph
+  width: 800
+  height: 600
+
+
+# USAGE EXAMPLE
+# chmod +x run-task.sh
+# ./run-task.sh anova-task.yaml
