@@ -24,3 +24,5 @@ buildNumber.properties
 sample-tsf/
 
 **/.idea/
+
+*.jar
