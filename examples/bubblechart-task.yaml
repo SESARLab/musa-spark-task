@@ -16,4 +16,4 @@ params:
 
 # USAGE EXAMPLE
 # chmod +x run-task.sh
-# ./run-task.sh anova-task.yaml
+# ./run-task.sh bubblechart-task.yaml
