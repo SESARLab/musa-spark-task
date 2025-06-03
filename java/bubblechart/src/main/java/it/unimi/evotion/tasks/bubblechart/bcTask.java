@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import it.unimi.evotion.tasks.utils.CommonUtils;
+
 public class bcTask extends Configured implements Task {
 
     // ----------------------------------------------------------------------
@@ -130,10 +132,10 @@ public class bcTask extends Configured implements Task {
         System.out.println(path);
 
 
-        BitmapEncoder.saveBitmap(chart, path, BitmapEncoder.BitmapFormat.PNG);
-        //BitmapEncoder.saveBitmap(chart, "C:\\Users\\narda\\AppData\\Local\\Temp\\graphs-3640716319703269447\\samplefile.png", BitmapEncoder.BitmapFormat.PNG );
-        HdfsWriter writer = new HdfsWriter(parameters);
-        writer.createFile(parameters.get("folderName"), parameters.get("fileName"), path);
+        String outputPath = path + File.separator + parameters.get("fileName");
+        BitmapEncoder.saveBitmap(chart, outputPath, BitmapEncoder.BitmapFormat.PNG);
+        postProcessing(outputPath, parameters.get("folderName"), parameters.get("fileName"));
+
 
     //    HdfsWriter writer = new HdfsWriter();
     //    writer.createFile("/user/bda/graph","bubblechart.png", "D:\\ProgettiSpark\\graphtest\\xchart\\Sample_Chart_300_DPI.png");
@@ -153,5 +155,15 @@ public class bcTask extends Configured implements Task {
         }
         return lq;
     }
+
+    private void postProcessing(String localPath, String hdfsFolder, String fileName) throws Exception {
+        //TODO check if the behavior is the same as before
+        CommonUtils.sleepIfSystemPropIsSet();
+
+        HdfsWriter writer = new HdfsWriter(parameters);
+        writer.createFile(hdfsFolder, fileName, localPath);
+
+    }
+
 
 }

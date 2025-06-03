@@ -101,6 +101,7 @@
                 <module>extra-jars</module>
                 <module>utils</module>
                 <module>anova</module>
+                <module>bubblechart</module>
             </modules>
         </profile>
         <profile>
@@ -112,6 +113,7 @@
                 <module>svm</module>
                 <module>utils</module>
                 <module>anova</module>
+                <module>bubblechart</module>
             </modules>
         </profile>
         <profile>

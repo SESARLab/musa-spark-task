@@ -20,6 +20,7 @@ create-task-jar: init
 		java/kmeans/kmeans/target/kmeans-1.0-jar-with-dependencies.jar \
 		java/example/target/example-1.0.0-jar-with-dependencies.jar \
 		java/anova/target/anova-1.0-jar-with-dependencies.jar \
+		java/bubblechart/target/bubblechart-1.0-jar-with-dependencies.jar \
 		${JAVA_OUT_FOLDER}
 
 
