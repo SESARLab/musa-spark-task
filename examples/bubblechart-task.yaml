@@ -6,8 +6,8 @@ params:
   col1: x
   col2: y
   mag: size
-  title: "Esempio Grafico a Bolle"
-  sname: SerieDemo
+  title: "Bubblechart example"
+  sname: DemoSeries
   fileName: bubblechart.png
   folderName: /user/bda/graph
   width: 800
