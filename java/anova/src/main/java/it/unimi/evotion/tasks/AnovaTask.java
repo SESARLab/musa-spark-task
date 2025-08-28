@@ -144,6 +144,8 @@ public class AnovaTask implements Task {
         anova.init();
         anova.evaluate();
         result = anova.result();
+
+        convertResult();
     }
 
     @Override
@@ -167,11 +169,11 @@ public class AnovaTask implements Task {
         }
 
         // 3. eventuali placeholder vuoti (coerenza tra task)
-        Dataset<Row> emptyDf = spark.emptyDataFrame();
-        emptyDf.coalesce(1).write()
-                .format(outputFormat)
-                .option("header", "true")
-                .save(resultPath + "/residuals"); 
+        // Dataset<Row> emptyDf = spark.emptyDataFrame();
+        // emptyDf.coalesce(1).write()
+        //         .format(outputFormat)
+        //         .option("header", "true")
+        //         .save(resultPath + "/residuals"); 
 
         CommonUtils.sleepIfSystemPropIsSet();
         this.spark.stop();
