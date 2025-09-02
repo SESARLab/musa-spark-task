@@ -21,4 +21,6 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
-sample-tsf/
+
+# custom
+output/java/
