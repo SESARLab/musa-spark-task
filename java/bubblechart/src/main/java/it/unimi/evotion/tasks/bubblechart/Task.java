@@ -6,5 +6,5 @@ public interface Task {
 
     void run(Object... params) throws Exception;
 
-   // void postProcessing(Object... params) throws Exception;
+    void postProcessing(Object... params) throws Exception;
 }

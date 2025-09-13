@@ -122,19 +122,23 @@ public class bcTask extends Configured implements Task {
             path = "/tmp/graphs";
         }*/
         Path tempPath = Files.createTempDirectory("graphs-");
+        String outputDir = tempPath.toString();
         path = tempPath.toString();
 
         //System.out.println(path);
+        String fileName = parameters.get("fileName");
+
 
         StringBuilder value = new StringBuilder().append(path).append(File.separator).append(parameters.get("fileName"));
         path = value.toString();
 
         System.out.println(path);
+        String outputPath = outputDir + File.separator + fileName;
 
-
-        String outputPath = path + File.separator + parameters.get("fileName");
+        // String outputPath = path + File.separator + parameters.get("fileName");
         BitmapEncoder.saveBitmap(chart, outputPath, BitmapEncoder.BitmapFormat.PNG);
-        postProcessing(outputPath, parameters.get("folderName"), parameters.get("fileName"));
+        // System.out.println("outpath: " + outputPath+" result path: "+parameters.get("resultPath") + " filename: " + parameters.get("fileName"));
+        postProcessing(outputPath,parameters.get("resultPath"), parameters.get("fileName"));
 
 
     //    HdfsWriter writer = new HdfsWriter();
@@ -156,12 +160,22 @@ public class bcTask extends Configured implements Task {
         return lq;
     }
 
-    private void postProcessing(String localPath, String hdfsFolder, String fileName) throws Exception {
+    @Override
+    public void postProcessing(Object... params) throws Exception {
         //TODO check if the behavior is the same as before
-        CommonUtils.sleepIfSystemPropIsSet();
+        // CommonUtils.sleepIfSystemPropIsSet();
+
+        if (params.length < 3) {
+            throw new IllegalArgumentException("postProcessing needs at least 3 parameters: localPath, hdfsFolder, fileName");
+        }
+
+        String localPath = params[0].toString();
+        String hdfsFolder = params[1].toString();
+        String fileName = params[2].toString();
 
         HdfsWriter writer = new HdfsWriter(parameters);
         writer.createFile(hdfsFolder, fileName, localPath);
+        CommonUtils.sleepIfSystemPropIsSet();
 
     }
 
