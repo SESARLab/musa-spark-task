@@ -21,6 +21,7 @@ create-task-jar: init
 		java/example/target/example-1.0.0-jar-with-dependencies.jar \
 		java/anova/target/anova-1.0-jar-with-dependencies.jar \
 		java/bubblechart/target/bubblechart-1.0-jar-with-dependencies.jar \
+		java/minmaxScaler/target/minmaxscaler-1.0-jar-with-dependencies.jar \
 		${JAVA_OUT_FOLDER}
 
 

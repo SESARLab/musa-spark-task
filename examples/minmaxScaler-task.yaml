@@ -1,0 +1,8 @@
+task: minmaxscaler
+mainClass: it.unimi.evotion.tasks.minmaxscaler
+jarPath: /path/to/ml-tasks.jar
+params:
+  csvData: /data/minmaxscaler.csv
+  labelName: height,weight,age
+  constParams: age
+  resultPath: /output/scaler/

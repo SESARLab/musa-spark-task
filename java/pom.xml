@@ -102,6 +102,7 @@
                 <module>utils</module>
                 <module>anova</module>
                 <module>bubblechart</module>
+                <module>minmaxScaler</module>
             </modules>
         </profile>
         <profile>
@@ -114,6 +115,7 @@
                 <module>utils</module>
                 <module>anova</module>
                 <module>bubblechart</module>
+                <module>minmaxScaler</module>
             </modules>
         </profile>
         <profile>

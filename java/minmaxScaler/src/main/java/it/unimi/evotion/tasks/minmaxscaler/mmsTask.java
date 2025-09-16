@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import it.unimi.evotion.tasks.utils.CommonUtils;
+
 
 public class mmsTask implements Task {
 
@@ -167,6 +169,7 @@ public class mmsTask implements Task {
                 .save(parameters.get("resultPath"));
 
         this.logger.info(this.debugString);
+        CommonUtils.sleepIfSystemPropIsSet();
         this.spark.stop();
         this.spark.close();
     }
